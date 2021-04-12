@@ -1,0 +1,20 @@
+---
+title: "Google Mobility 04-11"
+author: "Thomas Li"
+date: "4/11/2021"
+output: pdf_document
+---
+```{r}
+library(readr)
+region_mobility21 <- read_csv("~/Desktop/Stat 632/2021_US_Region_Mobility_Report.csv")
+View(region_mobility21)
+```
+
+```{r}
+ca_mobility21 <- subset(region_mobility21, sub_region_1 == "California")
+ca_mobility.col <- ca_mobility21[,-c(5:8)]
+ca_mobility.na <- na.omit(ca_mobility21.na)
+View(x)
+
+```
+
