@@ -24,7 +24,7 @@ The young man wanted a role model. He looked long and hard in his youth, but tha
 
 ## Data Description - Nic
 
-This data set is a collection of data from 190 countries for COVID19 data. There are 16 variables in the base data set that we will be using for our regression. We will also be limiting the location data strictly to California and using data from 3/15/2020 - 3/15/2021.
+This data set is a collection of data from 190 countries for COVID19. There are 16 variables in the base data set that we will be using for our regression. We will be limiting the location data strictly to California and using data from 3/15/2020 - 3/15/2021.
 
 ### Variables in the base data set
 
