@@ -1,0 +1,95 @@
+---
+title: "STAT 632 Final Project Base Data Exploritory Analysis"
+author: "Nic James"
+date: "04/15/2020"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+  html_notebook: default
+---
+
+# Project work
+
+Running some preliminary analysis of the COVID-19 Data Hub data.
+
+```{r}
+library(pacman)
+p_load(COVID19, tidyverse, ggplot2, dplyr)
+```
+
+# Using the help function
+```{r}
+help("covid19")
+```
+
+# Create df:
+
+US Data by State
+```{r}
+uscovid19data <- covid19("US", level = 3)
+tail(uscovid19data)
+```
+What are the names of all of the columns?
+```{r}
+names(uscovid19data)
+```
+
+## Create a new data frame
+
+### What columns do I want for version 1?
+
+* "id"                                 
+* "date"                               
+* "tests"                              
+* "confirmed"                          
+* "recovered"                          
+* "deaths"                             
+* "hosp"                               
+* "vent"                               
+* "icu"                                
+* "administrative_area_level"
+* "administrative_area_level_1"
+* "administrative_area_level_2"
+* "administrative_area_level_3"
+* "latitude"  
+* "longitude"
+
+#### Not sure I need
+
+* "population" ?
+* "iso_alpha_3" ? 
+* "iso_alpha_2" ? 
+* "iso_numeric" ? 
+
+*Note:* Version 2 will include economic data.
+
+### What am I going to need to add for version 3?
+
+* "vaccines" 
+* "school_closing"                     
+* "workplace_closing"                  
+* "cancel_events"                      
+* "gatherings_restrictions"            
+* "transport_closing"                  
+* "stay_home_restrictions"             
+* "internal_movement_restrictions"     
+* "international_movement_restrictions"
+* "information_campaigns"              
+* "testing_policy"                     
+* "contact_tracing"                    
+* "stringency_index"
+
+
+I don't have data for tests, recovered, hosp, and icu
+
+```{r}
+c_spread <- subset(uscovid19data, select = c("id", "date", "administrative_area_level_2", "administrative_area_level_3","tests", "confirmed", "recovered", "deaths", "hosp", "vent", "icu"))
+
+head(c_spread)
+nrow(c_spread)
+```
+
+```{r}
+summary.data.frame(c_spread)
+```
