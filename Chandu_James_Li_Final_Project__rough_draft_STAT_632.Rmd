@@ -1,7 +1,7 @@
 ---
 title: "Final Project 632 Rough Draft"
 author: "Nic James, Sri Chandu, Thomas Li "
-date: "10/15/2020"
+date: "05/21/2020"
 output:
   pdf_document: default
   word_document: default
@@ -9,105 +9,137 @@ output:
   html_notebook: default
 ---
 
-# Title of Project
-
-## Authors:
-
-Nic James, Sri Chandu, Thomas Li
 
 \pagebreak
 
 ## Abstract (100 words) - Nic
 
-
+The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
 
 ## Problem and Motivation (200 words) - Sri
 
+The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
 
+The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
 
 ## Data Description - Nic
 
-This data set is a collection of data from 190 countries for COVID19 data. There are 22 variables in the main data set that we will be using for our regression.
+This data set is a collection of data from 190 countries for COVID19 data. There are 16 variables in the base data set that we will be using for our regression. We will also be limiting the location data strictly to California and using data from 3/15/2020 - 3/15/2021.
 
-### Variables in the main data set
+### Variables in the base data set
 
-* **date** -	Observation date
+-   **date** - Observation date
 
-* **confirmed** - Cumulative number of confirmed cases
+-   **confirmed** - Cumulative number of confirmed cases
 
-* **tests** - Cumulative number of tests
+-   **tests** - Cumulative number of tests
 
-* **population** - Total population
+-   **population** - Total population
 
-* **latitude** - Latitude (Check to see if more than 1 since we are only using CA)
+-   **latitude** - Latitude (Check to see if more than 1 since we are only using CA)
 
-* **longitude** - Longitude (Check to see if more than 1 since we are only using CA)
+-   **longitude** - Longitude (Check to see if more than 1 since we are only using CA)
 
-* **school_closing** -	0: No measures - 1: Recommend closing - 2: Require closing (only some levels or categories, eg just high school, or just public schools - 3: Require closing all levels
+-   **school_closing** - 0: No measures - 1: Recommend closing - 2: Require closing (only some levels or categories, eg just high school, or just public schools - 3: Require closing all levels
 
-* **workplace_closing** -	0: No measures - 1: Recommend closing (or work from home) - 2: require closing for some sectors or categories of workers - 3: require closing (or work from home) all-but-essential workplaces (eg grocery stores, doctors). 
+-   **workplace_closing** - 0: No measures - 1: Recommend closing (or work from home) - 2: require closing for some sectors or categories of workers - 3: require closing (or work from home) all-but-essential workplaces (eg grocery stores, doctors).
 
-* **cancel_events** -	0: No measures - 1: Recommend canceling - 2: Require canceling gatherings_restrictions	0: No restrictions - 1: Restrictions on very large gatherings (the limit is above 1000 people) - 2: Restrictions on gatherings between 100-1000 people - 3: Restrictions on gatherings between 10-100 people - 4: Restrictions on gatherings of less than 10 people.  
+-   **cancel_events** - 0: No measures - 1: Recommend canceling - 2: Require canceling gatherings_restrictions 0: No restrictions - 1: Restrictions on very large gatherings (the limit is above 1000 people) - 2: Restrictions on gatherings between 100-1000 people - 3: Restrictions on gatherings between 10-100 people - 4: Restrictions on gatherings of less than 10 people.
 
-* **transport_closing** -	0: No measures - 1: Recommend closing (or significantly reduce volume/route/means of transport available) - 2: Require closing (or prohibit most citizens from using it). 
+-   **transport_closing** - 0: No measures - 1: Recommend closing (or significantly reduce volume/route/means of transport available) - 2: Require closing (or prohibit most citizens from using it).
 
-* **stay_home_restrictions** -	0: No measures - 1: recommend not leaving house - 2: require not leaving house with exceptions for daily exercise, grocery shopping, and “essential” trips - 3: Require not leaving house with minimal exceptions (e.g. allowed to leave only once every few days, or only one person can leave at a time, etc.).  
+-   **stay_home_restrictions** - 0: No measures - 1: recommend not leaving house - 2: require not leaving house with exceptions for daily exercise, grocery shopping, and "essential" trips - 3: Require not leaving house with minimal exceptions (e.g. allowed to leave only once every few days, or only one person can leave at a time, etc.).
 
-* **internal_movement_restrictions** -	0: No measures - 1: Recommend closing (or significantly reduce volume/route/means of transport) - 2: Require closing (or prohibit most people from using it).  
+-   **internal_movement_restrictions** - 0: No measures - 1: Recommend closing (or significantly reduce volume/route/means of transport) - 2: Require closing (or prohibit most people from using it).
 
-* **international_movement_restrictions** -	0: No measures - 1: Screening - 2: Quarantine arrivals from high-risk regions - 3: Ban on high-risk regions - 4: Total border closure.  
+-   **international_movement_restrictions** - 0: No measures - 1: Screening - 2: Quarantine arrivals from high-risk regions - 3: Ban on high-risk regions - 4: Total border closure.
 
-* **information_campaigns**	- 0: No COVID-19 public information campaign - 1: public officials urging caution about COVID-19 - 2: coordinated public information campaign (e.g. across traditional and social media).  
+-   **information_campaigns** - 0: No COVID-19 public information campaign - 1: public officials urging caution about COVID-19 - 2: coordinated public information campaign (e.g. across traditional and social media).
 
-* **testing_policy** -	0: No testing policy - 1: Only those who both (a) have symptoms AND (b) meet specific criteria (eg key workers, admitted to hospital, came into contact with a known case, returned from overseas) - 2: testing of anyone showing COVID-19 symptoms - 3: open public testing (eg “drive through” testing available to asymptomatic people).  
+-   **testing_policy** - 0: No testing policy - 1: Only those who both (a) have symptoms AND (b) meet specific criteria (eg key workers, admitted to hospital, came into contact with a known case, returned from overseas) - 2: testing of anyone showing COVID-19 symptoms - 3: open public testing (eg "drive through" testing available to asymptomatic people).
 
-* **contact_tracing** -	0: No contact tracing - 1: Limited contact tracing, not done for all cases - 2: Comprehensive contact tracing, done for all cases.  
+-   **contact_tracing** - 0: No contact tracing - 1: Limited contact tracing, not done for all cases - 2: Comprehensive contact tracing, done for all cases.
 
-* **stringency_index** -	Stringency of governmental responses.  
+-   **stringency_index** - Stringency of governmental responses.
 
 ### Variables used on top of base data set
 
-* **key_google_mobility** -	Identifier used in Google Mobility Reports.
+-   **key_google_mobility** - Identifier used in Google Mobility Reports.
 
-* **key_apple_mobility** -	Identifier used in Apple Mobility Reports.
+-   **key_apple_mobility** - Identifier used in Apple Mobility Reports.
 
-* **wb** - World Bank Data
+-   **wb** - World Bank Data
 
 ## Questions of Interest
 
+### Using the base data set
 
+#### 1.
+What model using the policy measures is the best predictor of deaths / confirmed?
+
+-   Response: deaths / confirmed
+
+-   Predictors: Base data set
+
+#### 2.
+
+
+
+### Using the World Bank Data
+
+#### 1.
+
+How does the economic profile of the country affect the mortality rate from COVID over the year 2020?
+
+-   Response: Number of deaths/Confirmed Cases
+
+-   Predictors: GDP per capita, GDP per capita growth, Poverty rate, base data set
+
+#### 2.
+
+What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID?
+
+-   Response: Number of cases and Number of deaths/Confirmed Cases
+
+-   Predictors: Pollution in mcg, base data set
+
+### Using the Google Mobility Data
+
+#### 1.
+Are policy measures that are non-restrictive with movement significant in preventing spread of Covid-19?
+
+- Response: confirmed
+
+- Predictors: any of the policy measures that don’t specifically prevent people from freely moving/travelling (i.e. testing policy, info campaigns, contract tracing) 
+
+#### 2.
+Are policy measures that are restrictive with movement more significant than non-restrictive measures in preventing the spread of Covid-19
+
+- Response: confirmed
+
+- Predictors: looking at both movement restrictive and non-restrictive and comparing their significance
 
 ## Regression Analysis, Results and Interpretation
 
 ### Important Details
 
-
-
 ### Exploratory Analysis
-
-
 
 ### Diagnostic Checks
 
-
-
 ### Interpretation
-
-
 
 ## Conclusions (200 words) - Thomas
 
+The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
 
+The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
 
 ## Appendicies
 
 ### Appendix 1: R Code
 
-
-
 ### Appendix 2 (optional): Exploratory analysis not used in final paper
-
-
 
 ## Source
 
