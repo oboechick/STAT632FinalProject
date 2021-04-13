@@ -1,0 +1,64 @@
+---
+title: "Final Project 632 Rough Draft"
+author: "Nic James, Sri Chandu, Thomas Li "
+date: "10/15/2020"
+output:
+  pdf_document: default
+  word_document: default
+  html_document: default
+  html_notebook: default
+---
+
+# Title of Project
+
+## Authors:
+
+Nic James, Sri Chandu, Thomas Li
+
+\pagebreak
+
+## Abstract (100 words) - Nic
+
+
+
+## Problem and Motivation (200 words) - Sri
+
+
+
+## Data Description - Nic
+
+
+
+## Questions of Interest
+
+
+
+## Regression Analysis, Results and Interpretation
+
+### Important Details
+
+
+
+### Exploratory Analysis
+
+
+
+### Diagnostic Checks
+
+
+
+### Interpretation
+
+
+
+## Conclusions (200 words) - Thomas
+
+
+
+## Appendicies
+
+### Appendix 1: R Code
+
+
+
+### Appendix 2 (optional): Exploratory analysis not used in final paper
