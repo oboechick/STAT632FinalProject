@@ -27,19 +27,20 @@ help("covid19")
 
 US Data by State
 ```{r}
-uscovid19data <- covid19("US", level = 3)
-tail(uscovid19data)
+cacovid19data <- covid19("US", level = 2) %>% 
+  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-15")
+head(cacovid19data)
+tail(cacovid19data)
 ```
 What are the names of all of the columns?
 ```{r}
-names(uscovid19data)
+names(cacovid19data)
 ```
 
 ## Create a new data frame
 
-### What columns do I want for version 1?
+### What columns do I want for the base data set?
 
-* "id"                                 
 * "date"                               
 * "tests"                              
 * "confirmed"                          
@@ -48,24 +49,11 @@ names(uscovid19data)
 * "hosp"                               
 * "vent"                               
 * "icu"                                
-* "administrative_area_level"
-* "administrative_area_level_1"
 * "administrative_area_level_2"
 * "administrative_area_level_3"
 * "latitude"  
 * "longitude"
-
-#### Not sure I need
-
-* "population" ?
-* "iso_alpha_3" ? 
-* "iso_alpha_2" ? 
-* "iso_numeric" ? 
-
-*Note:* Version 2 will include economic data.
-
-### What am I going to need to add for version 3?
-
+* "population"
 * "vaccines" 
 * "school_closing"                     
 * "workplace_closing"                  
@@ -80,16 +68,18 @@ names(uscovid19data)
 * "contact_tracing"                    
 * "stringency_index"
 
+I don't have data for vaccines, tests, recovered, hosp, vent, and icu so we will remove these variables. 
 
-I don't have data for tests, recovered, hosp, and icu
+Should we remove Longitude, Latitude, and population since the value is the same for every row?
 
 ```{r}
-c_spread <- subset(uscovid19data, select = c("id", "date", "administrative_area_level_2", "administrative_area_level_3","tests", "confirmed", "recovered", "deaths", "hosp", "vent", "icu"))
+base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "administrative_area_level_2", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing", "cancel_events", "gatherings_restrictions", "transport_closing", "stay_home_restrictions", "internal_movement_restrictions", "international_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
 
-head(c_spread)
-nrow(c_spread)
+head(base_data)
 ```
 
+All variables have data in every row now.
+
 ```{r}
-summary.data.frame(c_spread)
+summary(base_data)
 ```
