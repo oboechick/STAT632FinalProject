@@ -4,17 +4,41 @@ author: "Thomas Li"
 date: "4/11/2021"
 output: pdf_document
 ---
-```{r}
+```{r message=FALSE}
+# region mobility report
 library(readr)
 region_mobility21 <- read_csv("~/Desktop/Stat 632/2021_US_Region_Mobility_Report.csv")
-View(region_mobility21)
-```
 
-```{r}
+# subset dataframe range to CA only
 ca_mobility21 <- subset(region_mobility21, sub_region_1 == "California")
 ca_mobility.col <- ca_mobility21[,-c(5:8)]
-ca_mobility.na <- na.omit(ca_mobility21.na)
-View(x)
+ca_mobility.na <- na.omit(ca_mobility.col)
+```
 
+
+```{r}
+# covid-19 report
+library(COVID19)
+covid <- covid19(
+  country = "US",
+  level = 2,
+  start = "2020-04-10",
+)
+# subset dataframe to CA only
+ca_covid <- subset(covid, administrative_area_level_2 == "California")
+```
+
+
+```{r}
+# merge covid and google mobility report data
+merge.dat <- merge(x= ca_mobility.na, y= ca_covid, by= 'date')
+View(merge.dat)
+```
+
+
+```{r}
+# takes too long to run
+gmr <- "https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv"
+x   <- covid19(gmr = gmr)
 ```
 
