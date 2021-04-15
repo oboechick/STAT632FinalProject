@@ -15,7 +15,7 @@ Running some preliminary analysis of the COVID-19 Data Hub data.
 
 ```{r}
 library(pacman)
-p_load(COVID19, tidyverse, ggplot2, dplyr, leaps, readr)
+p_load(COVID19, car, tidyverse, ggplot2, dplyr, leaps, readr)
 ```
 
 # Using the help function
@@ -113,21 +113,61 @@ fbase_data <- base_data %>%
          finformation_campaigns, ftesting_policy, fcontact_tracing)
 
 head(fbase_data)
-str(fbase_data)
+
 ```
 
 ```{r}
-fit <- lm(deaths ~ date + confirmed + deaths + tests + latitude  + longitude + population +  fschool_closing +
-            fworkplace_closing + fcancel_events + fgatherings_restrictions + ftransport_closing + 
-            fstay_home_restrictions + finternal_movement_restrictions + finternational_movement_restrictions +
-            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = base_data)
+length(fbase_data$date)
+length(fbase_data$confirmed)
+length(fbase_data$deaths)
+length(fbase_data$tests)
+length(fbase_data$administrative_area_level_2) 
+length(fbase_data$latitude)
+length(fbase_data$longitude)
+length(fbase_data$population)
+length(fbase_data$fschool_closing)
+length(fbase_data$fworkplace_closing)
+length(fbase_data$fgatherings_restrictions)
+length(fbase_data$fstay_home_restrictions)
+length(fbase_data$finternal_movement_restrictions)
+length(fbase_data$finformation_campaigns)
+length(fbase_data$ftesting_policy)
+length(fbase_data$fcontact_tracing)
+length(fbase_data$stringency_index)
 ```
 
+```{r}
+mod.0 <- lm(deaths ~ 1, data = fbase_data)
+mod.full <- lm(deaths ~ date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
+            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+```
 
+```{r}
+pairs(deaths ~ date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
+            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+```
 
+There are 14 predictors selected out of 16. What does NA here mean?
+```{r}
+(step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
+```
 
+The BIC appears to be the same as the AIC.
+```{r}
+(step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
+```
 
+Also get different model but still 14 predictors with one NA in this model.
 
+```{r}
+(step_aicfull <- step(mod.full, trace = 0))
+```
+
+```{r}
+summary(step_aicfull)
+```
 
 
 
