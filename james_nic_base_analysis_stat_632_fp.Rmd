@@ -28,7 +28,7 @@ help("covid19")
 US Data by State
 ```{r}
 cacovid19data <- covid19("US", level = 2) %>% 
-  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-15")
+  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-14")
 head(cacovid19data)
 tail(cacovid19data)
 ```
@@ -68,12 +68,10 @@ names(cacovid19data)
 * "contact_tracing"                    
 * "stringency_index"
 
-I don't have data for vaccines, tests, recovered, hosp, vent, and icu so we will remove these variables. 
-
-Should we remove Longitude, Latitude, and population since the value is the same for every row?
+We don't have data for vaccines, recovered, hosp, vent, and icu so we will remove these variables. 
 
 ```{r}
-base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "administrative_area_level_2", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing", "cancel_events", "gatherings_restrictions", "transport_closing", "stay_home_restrictions", "internal_movement_restrictions", "international_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
+base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "tests","administrative_area_level_2", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing", "cancel_events", "gatherings_restrictions", "transport_closing", "stay_home_restrictions", "internal_movement_restrictions", "international_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
 
 head(base_data)
 ```
@@ -81,8 +79,59 @@ head(base_data)
 All variables have data in every row now.
 
 ```{r}
-summary(base_data)
+str(base_data)
+nrow(base_data)
 ```
+
+Need to turn the policy measures into factors before we can run a regression model. However factors need to have 2 or more levels in order to work so we will remove cancel_events, international_movement, and transport_closing.
+
+```{r}
+base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "tests","administrative_area_level_2", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing",  "gatherings_restrictions", "stay_home_restrictions", "internal_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
+
+head(base_data)
+```
+
+```{r}
+fschool_closing = as.factor(base_data$school_closing)
+fworkplace_closing <- as.factor(base_data$workplace_closing)
+fgatherings_restrictions <- as.factor(base_data$gatherings_restrictions)
+fstay_home_restrictions <- as.factor(base_data$stay_home_restrictions)
+finternal_movement_restrictions <- as.factor(base_data$internal_movement_restrictions)
+finformation_campaigns <- as.factor(base_data$information_campaigns)
+ftesting_policy <- as.factor(base_data$testing_policy)
+fcontact_tracing <- as.factor(base_data$contact_tracing)
+```
+
+
+```{r}
+attach(base_data)
+
+
+fbase_data <- base_data %>% 
+  mutate(fschool_closing, fworkplace_closing, fgatherings_restrictions,
+         fstay_home_restrictions, finternal_movement_restrictions,
+         finformation_campaigns, ftesting_policy, fcontact_tracing)
+
+head(fbase_data)
+str(fbase_data)
+```
+
+```{r}
+fit <- lm(deaths ~ date + confirmed + deaths + tests + latitude  + longitude + population +  fschool_closing +
+            fworkplace_closing + fcancel_events + fgatherings_restrictions + ftransport_closing + 
+            fstay_home_restrictions + finternal_movement_restrictions + finternational_movement_restrictions +
+            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = base_data)
+```
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -108,6 +157,33 @@ ca_mobility.dat <- na.omit(ca_mobility.col)
 cacovid_mobility <- merge(x = ca_mobility.dat, y = base_data, all = T)
 View(cacovid_mobility)
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
