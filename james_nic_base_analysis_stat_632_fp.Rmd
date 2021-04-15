@@ -4,9 +4,6 @@ author: "Nic James"
 date: "04/15/2020"
 output:
   pdf_document: default
-  word_document: default
-  html_document: default
-  html_notebook: default
 ---
 
 # Project work
@@ -114,26 +111,6 @@ fbase_data <- base_data %>%
 
 head(fbase_data)
 
-```
-
-```{r}
-length(fbase_data$date)
-length(fbase_data$confirmed)
-length(fbase_data$deaths)
-length(fbase_data$tests)
-length(fbase_data$administrative_area_level_2) 
-length(fbase_data$latitude)
-length(fbase_data$longitude)
-length(fbase_data$population)
-length(fbase_data$fschool_closing)
-length(fbase_data$fworkplace_closing)
-length(fbase_data$fgatherings_restrictions)
-length(fbase_data$fstay_home_restrictions)
-length(fbase_data$finternal_movement_restrictions)
-length(fbase_data$finformation_campaigns)
-length(fbase_data$ftesting_policy)
-length(fbase_data$fcontact_tracing)
-length(fbase_data$stringency_index)
 ```
 
 ```{r}
