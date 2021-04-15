@@ -4,15 +4,40 @@ author: "Thomas Li"
 date: "4/11/2021"
 output: pdf_document
 ---
+```{r}
+library(pacman)
+p_load(readr,COVID19,leaps,ggplot2,tidyverse,dplyr)
+```
+
+
 ```{r message=FALSE}
 # region mobility report
 library(readr)
-region_mobility21 <- read_csv("~/Desktop/Stat 632/2021_US_Region_Mobility_Report.csv")
+region_mobility21 <- read_csv("2021_US_Region_Mobility_Report.csv")
+region_mobility20 <- read_csv("2020_US_Region_Mobility_Report.csv")
+region_mobility20.21 <- merge(x = region_mobility20, y = region_mobility21, all = T)
+```
 
+```{r}
 # subset dataframe range to CA only
-ca_mobility21 <- subset(region_mobility21, sub_region_1 == "California")
-ca_mobility.col <- ca_mobility21[,-c(5:8)]
-ca_mobility.na <- na.omit(ca_mobility.col)
+ca_mobility20.21 <- region_mobility20.21 %>% 
+  filter(sub_region_1 == "California", date >= "2020-03-15", date <= "2021-03-15")
+ca_mobility.col <- ca_mobility20.21[,-c(5:8)]
+ca_mobility.dat <- na.omit(ca_mobility.col)
+tail(ca_mobility.dat)
+```
+
+
+```{r}
+cacovid19data <- covid19("US", level = 2) %>% 
+  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-15")
+```
+
+
+```{r}
+# merge covid19 and google mobility data
+cacovid_mobility <- merge(x = ca_mobility.dat, y = cacovid19data, all = T)
+View(cacovid_mobility)
 ```
 
 
@@ -37,7 +62,20 @@ View(merge.dat)
 
 
 ```{r}
-# takes too long to run
+library(leaps)
+
+google.full <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat)
+
+google.red <- lm(confirmed ~ 1, data = merge.dat)
+
+step(google.full, scope = list(lower = google.red, upper = google.full), direction = "backward")
+
+summary(regsubsets(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat))
+```
+
+
+```{r}
+# datahub provided merge
 gmr <- "https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv"
 x   <- covid19(gmr = gmr)
 ```
