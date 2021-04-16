@@ -6,7 +6,7 @@ output: pdf_document
 ---
 ```{r}
 library(pacman)
-p_load(readr,COVID19,leaps,ggplot2,tidyverse,dplyr)
+p_load(readr,COVID19,leaps,ggplot2,tidyverse,dplyr,car)
 
 ```
 
@@ -75,7 +75,19 @@ summary(regsubsets(confirmed ~ retail_and_recreation_percent_change_from_baselin
 ```
 
 ```{r}
-summary(google.fit)
+summary(google.full)
+plot(google.full)
+```
+
+
+```{r}
+# powerTransform and invTranPlot only work for positive values
+# Yeo-Johnson boxCox works with negative values
+summary(powerTransform(cbind(retail_and_recreation_percent_change_from_baseline + 
+    grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + 
+    transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + 
+    residential_percent_change_from_baseline) ~ 1, merge.dat))
+invTranPlot(merge.dat$confirmed ~ merge.dat$retail_and_recreation_percent_change_from_baseline, optimal = T)
 ```
 
 
