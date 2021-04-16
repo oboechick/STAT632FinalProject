@@ -74,6 +74,10 @@ step(google.full, scope = list(lower = google.red, upper = google.full), directi
 summary(regsubsets(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat))
 ```
 
+```{r}
+summary(google.fit)
+```
+
 
 ```{r}
 # datahub provided merge
