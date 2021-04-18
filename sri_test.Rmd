@@ -7,4 +7,25 @@ output: github_document
 
 - WORLD BANK DATA SET Information - 
  
+```{r}
+# install the package
+install.packages("COVID19")
+
+# load the package
+library("COVID19")
+```
+
+#ONLY IMPORTED AFG data 
+```{r}
+wb <- c("gdp" = "NY.GDP.MKTP.CD", "hosp_beds" = "SH.MED.BEDS.ZS")
+x  <- covid19(wb = wb)
+
+
+
+```
  
+```{r}
+GDP<- read.csv("API_NY.GDP.MKTP.CD_DS2_en_csv_v2_2163564/API_NY.GDP.MKTP.CD_DS2_en_csv_v2_2163564.csv")
+
+```
+
