@@ -7,25 +7,30 @@ output: pdf_document
 ```{r}
 library(pacman)
 p_load(readr,COVID19,leaps,ggplot2,tidyverse,dplyr,car)
-
 ```
 
 
 ```{r message=FALSE}
 # region mobility report
-library(readr)
 region_mobility21 <- read_csv("2021_US_Region_Mobility_Report.csv")
 region_mobility20 <- read_csv("2020_US_Region_Mobility_Report.csv")
 region_mobility20.21 <- merge(x = region_mobility20, y = region_mobility21, all = T)
 ```
 
+Subsetting Google Mobility data to for linear regression model
 ```{r}
 # subset dataframe range to CA only
 ca_mobility20.21 <- region_mobility20.21 %>% 
   filter(sub_region_1 == "California", date >= "2020-03-15", date <= "2021-03-15")
+
+# remove unique identifier columns
 ca_mobility.col <- ca_mobility20.21[,-c(5:8)]
-ca_mobility.dat <- na.omit(ca_mobility.col)
-tail(ca_mobility.dat)
+
+# remove N/A
+ca_mobility.omit <- na.omit(ca_mobility.col)
+
+# convert percentages to decimals
+ca_mobility.dat <- ca_mobility.omit[,6:11]/100
 ```
 
 
@@ -44,7 +49,6 @@ View(cacovid_mobility)
 
 ```{r}
 # covid-19 report
-library(COVID19)
 covid <- covid19(
   country = "US",
   level = 2,
@@ -63,13 +67,20 @@ View(merge.dat)
 
 
 ```{r}
-library(leaps)
-
+# full fitted model
 google.full <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat)
 
-google.red <- lm(confirmed ~ 1, data = merge.dat)
+# optimal lambda for response
+boxCox(google.full)
 
-step(google.full, scope = list(lower = google.red, upper = google.full), direction = "backward")
+# log transformed response fitted model
+google.log <- lm(log(confirmed) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat)
+
+google.red <- lm(confirmed ~ 1, data = merge.dat)
+boxCox(google.full)
+plot(google.log)
+
+step(google.full, scope = list(lower = google.red, upper = google.full))
 
 summary(regsubsets(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat))
 ```
