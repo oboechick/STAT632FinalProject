@@ -83,3 +83,4 @@ All variables have data in every row now.
 ```{r}
 summary(base_data)
 ```
+
