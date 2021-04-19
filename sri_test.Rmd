@@ -3,32 +3,21 @@ title: "Untitled"
 output: github_document
 ---
 
-- 2nd test -
-
-- WORLD BANK DATA SET Information - 
- 
+#Base Data with World Bank imported, GDP, GDP growth, Hospital beds/1,000 ppl, Poverty= Poverty head count ratio at 1.90 a day(% of pop), CO2em: CO2 emissions (metric tons/capita), 
 ```{r}
-# install the package
-install.packages("COVID19")
+library(pacman)
+p_load(COVID19, car, tidyverse, ggplot2, dplyr, leaps, readr)
 
-# load the package
-library("COVID19")
+x <- covid19()
+covid19<- covid19(level = 1, start = "2020-03-15", end = "2021-03-15",)
+wb <- c("gdp" = "NY.GDP.MKTP.CD", "hosp_beds" = "SH.MED.BEDS.ZS","gdp_grow" = "NY.GDP.MKTP.KD.ZG","poverty" = "SI.POV.DDAY", "co2em" = "EN.ATM.CO2E.PC")
+wbdcovid  <- covid19(wb = wb)
+
+wbdcovid
 ```
+#Only variables from 
 
-#ONLY IMPORTED AFG data 
 ```{r}
-wb <- c("gdp" = "NY.GDP.MKTP.CD", "hosp_beds" = "SH.MED.BEDS.ZS")
-x  <- covid19(wb = wb)
-
-
-
-```
- 
-```{r}
-GDP<- read.csv("API_NY.GDP.MKTP.CD_DS2_en_csv_v2_2163564/API_NY.GDP.MKTP.CD_DS2_en_csv_v2_2163564.csv")
 
 ```
 
-=======
--TLI TEST-
->>>>>>> 4f02699c594b256580d9c893e5023fe96a5321da
