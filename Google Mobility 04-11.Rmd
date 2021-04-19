@@ -57,6 +57,7 @@ boxCox(google.full)
 # log transformed response fitted model
 google.log <- lm(log(confirmed) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat)
 
+# null model
 google.red <- lm(confirmed ~ 1, data = merge.dat)
 boxCox(google.full)
 plot(google.log)
@@ -66,6 +67,7 @@ step(google.full, scope = list(lower = google.red, upper = google.full))
 subset.summary <- summary(regsubsets(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat))
 
 subset.summary
+
 predict_one <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline, data = merge.dat)
 
 predict_two <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline, data = merge.dat)
@@ -76,7 +78,34 @@ predict_four <- lm(confirmed ~ retail_and_recreation_percent_change_from_baselin
 
 predict_five <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline, data = merge.dat)
 
-predict_one$adjr2
+summary(predict_one)
+summary(predict_two)
+summary(predict_three)
+summary(predict_four)
+summary(predict_five)
+
+AIC(predict_one)
+AIC(predict_two)
+AIC(predict_three)
+AIC(predict_four)
+AIC(predict_five)
+AIC(google.full)
+
+BIC(predict_one)
+BIC(predict_two)
+BIC(predict_three)
+BIC(predict_four)
+BIC(predict_five)
+BIC(google.full)
+BIC(google.full)
+
+summary(predict_one)$adj.r.squared
+summary(predict_two)$adj.r.squared
+summary(predict_three)$adj.r.squared
+summary(predict_four)$adj.r.squared
+summary(predict_five)$adj.r.squared
+summary(google.full)$adj.r.squared
+summary(google.log)$adj.r.squared
 ```
 
 ```{r}
