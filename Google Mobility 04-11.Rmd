@@ -5,16 +5,95 @@ date: "4/11/2021"
 output: pdf_document
 ---
 ```{r}
+library(pacman)
+p_load(readr,COVID19,leaps,ggplot2,tidyverse,dplyr,car)
+
+```
+
+
+```{r message=FALSE}
+# region mobility report
 library(readr)
-region_mobility21 <- read_csv("~/Desktop/Stat 632/2021_US_Region_Mobility_Report.csv")
-View(region_mobility21)
+region_mobility21 <- read_csv("2021_US_Region_Mobility_Report.csv")
+region_mobility20 <- read_csv("2020_US_Region_Mobility_Report.csv")
+region_mobility20.21 <- merge(x = region_mobility20, y = region_mobility21, all = T)
 ```
 
 ```{r}
-ca_mobility21 <- subset(region_mobility21, sub_region_1 == "California")
-ca_mobility.col <- ca_mobility21[,-c(5:8)]
-ca_mobility.na <- na.omit(ca_mobility21.na)
-View(x)
+# subset dataframe range to CA only
+ca_mobility20.21 <- region_mobility20.21 %>% 
+  filter(sub_region_1 == "California", date >= "2020-03-15", date <= "2021-03-15")
+ca_mobility.col <- ca_mobility20.21[,-c(5:8)]
+ca_mobility.dat <- na.omit(ca_mobility.col)
+tail(ca_mobility.dat)
+```
 
+
+```{r}
+cacovid19data <- covid19("US", level = 2) %>% 
+  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-15")
+```
+
+
+```{r}
+# merge covid19 and google mobility data
+cacovid_mobility <- merge(x = ca_mobility.dat, y = cacovid19data, all = T)
+View(cacovid_mobility)
+```
+
+
+```{r}
+# covid-19 report
+library(COVID19)
+covid <- covid19(
+  country = "US",
+  level = 2,
+  start = "2020-04-10",
+)
+# subset dataframe to CA only
+ca_covid <- subset(covid, administrative_area_level_2 == "California")
+```
+
+
+```{r}
+# merge covid and google mobility report data
+merge.dat <- merge(x= ca_mobility.na, y= ca_covid, by= 'date')
+View(merge.dat)
+```
+
+
+```{r}
+library(leaps)
+
+google.full <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat)
+
+google.red <- lm(confirmed ~ 1, data = merge.dat)
+
+step(google.full, scope = list(lower = google.red, upper = google.full), direction = "backward")
+
+summary(regsubsets(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat))
+```
+
+```{r}
+summary(google.full)
+plot(google.full)
+```
+
+
+```{r}
+# powerTransform and invTranPlot only work for positive values
+# Yeo-Johnson boxCox works with negative values
+summary(powerTransform(cbind(retail_and_recreation_percent_change_from_baseline + 
+    grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + 
+    transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + 
+    residential_percent_change_from_baseline) ~ 1, merge.dat))
+invTranPlot(merge.dat$confirmed ~ merge.dat$retail_and_recreation_percent_change_from_baseline, optimal = T)
+```
+
+
+```{r}
+# datahub provided merge
+gmr <- "https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv"
+x   <- covid19(gmr = gmr)
 ```
 
