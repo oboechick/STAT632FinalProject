@@ -42,10 +42,10 @@ cleandata
 Graphs to check for Normality and variance
 
 ```{r}
-economic<- lm(deaths ~ confirmed, gdp, gdp_grow, poverty, data= cleandata) # Economic
-airqual<- lm(deaths ~ co2em, pollution, data= wbcovdata) #Air Quality
+#economic<- lm(deaths ~ confirmed, gdp, gdp_grow, poverty, data= cleandata) # Economic
+#airqual<- lm(deaths ~ co2em, pollution, data= wbcovdata) #Air Quality
 
-summary(economic)
-summary(airqual)
+#summary(economic)
+#summary(airqual)
 ```
 
