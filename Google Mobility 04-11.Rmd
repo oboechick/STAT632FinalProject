@@ -7,25 +7,30 @@ output: pdf_document
 ```{r}
 library(pacman)
 p_load(readr,COVID19,leaps,ggplot2,tidyverse,dplyr,car)
-
 ```
 
 
 ```{r message=FALSE}
 # region mobility report
-library(readr)
 region_mobility21 <- read_csv("2021_US_Region_Mobility_Report.csv")
 region_mobility20 <- read_csv("2020_US_Region_Mobility_Report.csv")
 region_mobility20.21 <- merge(x = region_mobility20, y = region_mobility21, all = T)
 ```
 
+Subsetting Google Mobility data to for linear regression model
 ```{r}
 # subset dataframe range to CA only
 ca_mobility20.21 <- region_mobility20.21 %>% 
   filter(sub_region_1 == "California", date >= "2020-03-15", date <= "2021-03-15")
+
+# remove unique identifier columns
 ca_mobility.col <- ca_mobility20.21[,-c(5:8)]
-ca_mobility.dat <- na.omit(ca_mobility.col)
-tail(ca_mobility.dat)
+
+# remove N/A
+ca_mobility.omit <- na.omit(ca_mobility.col)
+
+# convert percentages to decimals
+ca_mobility.dat <- ca_mobility.omit[,6:11]/100
 ```
 
 
@@ -43,35 +48,64 @@ View(cacovid_mobility)
 
 
 ```{r}
-# covid-19 report
-library(COVID19)
-covid <- covid19(
-  country = "US",
-  level = 2,
-  start = "2020-04-10",
-)
-# subset dataframe to CA only
-ca_covid <- subset(covid, administrative_area_level_2 == "California")
-```
-
-
-```{r}
-# merge covid and google mobility report data
-merge.dat <- merge(x= ca_mobility.na, y= ca_covid, by= 'date')
-View(merge.dat)
-```
-
-
-```{r}
-library(leaps)
-
+# full fitted model
 google.full <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat)
 
+# optimal lambda for response from full model
+boxCox(google.full)
+
+# log transformed response fitted model
+google.log <- lm(log(confirmed) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat)
+
+# null model
 google.red <- lm(confirmed ~ 1, data = merge.dat)
+boxCox(google.full)
+plot(google.log)
 
-step(google.full, scope = list(lower = google.red, upper = google.full), direction = "backward")
+step(google.full, scope = list(lower = google.red, upper = google.full))
 
-summary(regsubsets(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat))
+subset.summary <- summary(regsubsets(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = merge.dat))
+
+subset.summary
+
+predict_one <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline, data = merge.dat)
+
+predict_two <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline, data = merge.dat)
+
+predict_three <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline, data = merge.dat)
+
+predict_four <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline, data = merge.dat)
+
+predict_five <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline, data = merge.dat)
+
+summary(predict_one)
+summary(predict_two)
+summary(predict_three)
+summary(predict_four)
+summary(predict_five)
+
+AIC(predict_one)
+AIC(predict_two)
+AIC(predict_three)
+AIC(predict_four)
+AIC(predict_five)
+AIC(google.full)
+
+BIC(predict_one)
+BIC(predict_two)
+BIC(predict_three)
+BIC(predict_four)
+BIC(predict_five)
+BIC(google.full)
+BIC(google.full)
+
+summary(predict_one)$adj.r.squared
+summary(predict_two)$adj.r.squared
+summary(predict_three)$adj.r.squared
+summary(predict_four)$adj.r.squared
+summary(predict_five)$adj.r.squared
+summary(google.full)$adj.r.squared
+summary(google.log)$adj.r.squared
 ```
 
 ```{r}
