@@ -29,21 +29,21 @@ ca_mobility.col <- ca_mobility20.21[,-c(5:8)]
 # remove N/A
 ca_mobility.omit <- na.omit(ca_mobility.col)
 
-# convert percentages to decimals
-ca_mobility.dat <- ca_mobility.omit[,6:11]/100
+# convert percentages to decimals and make all values positive 
+ca_mobility.dat <- (ca_mobility.omit[,6:11]/100)+0.9
+View(ca_mobility.dat)
 ```
 
 
 ```{r}
-cacovid19data <- covid19("US", level = 2) %>% 
-  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-15")
 
+# covid19 data
 base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "administrative_area_level_2", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing", "gatherings_restrictions", "stay_home_restrictions", "internal_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
 ```
 
 
 ```{r}
-
+# covid19 data factors
 fschool_closing = as.factor(base_data$school_closing)
 fworkplace_closing <- as.factor(base_data$workplace_closing)
 fgatherings_restrictions <- as.factor(base_data$gatherings_restrictions)
@@ -56,15 +56,13 @@ fcontact_tracing <- as.factor(base_data$contact_tracing)
 
 
 ```{r}
+# attach factors to base covid19 data
 attach(base_data)
-
 
 fbase_data <- base_data %>% 
   mutate(fschool_closing, fworkplace_closing, fgatherings_restrictions,
          fstay_home_restrictions, finternal_movement_restrictions,
          finformation_campaigns, ftesting_policy, fcontact_tracing)
-
-head(fbase_data)
 
 ```
 
@@ -72,58 +70,79 @@ head(fbase_data)
 
 ```{r}
 # merge covid19 and google mobility data
-
 cacovid_mobility <- merge(x = ca_mobility.dat, y = fbase_data, all = T)
 head(cacovid_mobility)
-
 ```
 
 
 ```{r}
-# full fitted model
-google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + latitude  + longitude + population +  fschool_closing +
-            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
-            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+# full fitted model (omit lat, long, date, popln)
+google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + confirmed +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
 
+summary(google.full)
+```
+
+
+```{r}
+# diagnostic plots
 pairs(google.full)
-
 plot(google.full, which = c(1,2))
-
-summary(cacovid_mobility)
-google.covid <- lm(confirmed ~ ., data = cacovid_mobility)
-
-plot(google.covid)
 ```
-
-
-```{r}
-google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + latitude  + longitude + population +  fschool_closing +
-            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
-            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
-
-pairs(google.full)
-```
-
 
 
 ```{r}
 # optimal lambda for response from full model
 boxCox(google.full)
+```
 
+
+```{r}
 # log transformed response fitted model
 google.log <- lm(log(confirmed) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility)
+```
 
+
+```{r}
 # null model
-google.red <- lm(confirmed ~ 1, data = cacovid_mobility)
+google.red <- lm(deaths ~ 1, data = cacovid_mobility)
 boxCox(google.full)
 plot(google.log)
+```
 
+
+```{r}
 step(google.full, scope = list(lower = google.red, upper = google.full))
+```
 
-subset.summary <- summary(regsubsets(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility))
+
+```{r}
+# subset models
+subset.summary <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + confirmed +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility))
 
 subset.summary
+```
 
+```{r}
+# after model selection (10 predictors)
+regsubset.fit <- lm(deaths ~ confirmed + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+
+summary(regsubset.fit)
+```
+
+```{r}
+# subset without Google mobility
+summary(regsubsets(deaths ~ confirmed + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility))
+
+```
+
+```{r}
+step(regsubset.fit, scope = list(lower = google.red, upper = regsubset.fit))
+```
+
+
+
+```{r}
+# All possible models
 predict_one <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline, data = cacovid_mobility)
 
 predict_two <- lm(confirmed ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline, data = cacovid_mobility)
@@ -163,6 +182,7 @@ summary(predict_five)$adj.r.squared
 summary(google.full)$adj.r.squared
 summary(google.log)$adj.r.squared
 ```
+
 
 ```{r}
 summary(google.full)
