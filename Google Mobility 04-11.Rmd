@@ -74,31 +74,35 @@ cacovid_mobility <- merge(x = ca_mobility.dat, y = fbase_data, all = T)
 head(cacovid_mobility)
 ```
 
+We ran an initial fitted linear model with all nonconstant Google mobility and Covid 19
+data. Immediately, we see that all six predictors from the Google mobility data set 
+do not have significance.
 
 ```{r}
-# full fitted model (omit lat, long, date, popln)
+# full fitted model (omitted lat, long, popln because it stays constant)
 google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + confirmed +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
 
 summary(google.full)
 ```
 
-
+Running a residuals vs. fitted and Q-Q plot show that the initial model does not 
+follow a normal distribution. 
 ```{r}
 # diagnostic plots
-pairs(google.full)
 plot(google.full, which = c(1,2))
 ```
+Transformation of all non-factor and significant predictors. The confirmed 
+response can either use a log transformation or no transformation. The stringency
+index should be transformed with a negative squareroot
+```{r}
+pt <- powerTransform(cbind(cacovid_mobility$confirmed, cacovid_mobility$stringency_index) ~ 1)
+summary(pt)
+```
 
-
+No transfomration is necessary
 ```{r}
 # optimal lambda for response from full model
 boxCox(google.full)
-```
-
-
-```{r}
-# log transformed response fitted model
-google.log <- lm(log(confirmed) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility)
 ```
 
 
