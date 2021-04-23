@@ -109,7 +109,7 @@ What is the effect of air pollution (or exposure to air pollution) to the number
 
 Are policy measures that are non-restrictive with movement significant in preventing spread of Covid-19?
 
--   Response: confirmed
+-   Response: deaths
 
 -   Predictors: any of the policy measures that don't specifically prevent people from freely moving/travelling (i.e. testing policy, info campaigns, contract tracing)
 
@@ -117,7 +117,7 @@ Are policy measures that are non-restrictive with movement significant in preven
 
 Are policy measures that are restrictive with movement more significant than non-restrictive measures in preventing the spread of Covid-19
 
--   Response: confirmed
+-   Response: deaths
 
 -   Predictors: looking at both movement restrictive and non-restrictive and comparing their significance
 
