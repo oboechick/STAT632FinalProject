@@ -183,6 +183,15 @@ pt <- powerTransform(cbind(confirmed, tests, fschool_closing,
     stringency_index) ~ 1, fbase_data)
 summary(pt)
 ```
+
+```{r}
+pt2 <- powerTransform(cbind(confirmed, tests, stringency_index) ~ 1, fbase_data)
+summary(pt2)
+```
+
+
+
+
 ```{r}
 invTranPlot(y~x)
 ```
