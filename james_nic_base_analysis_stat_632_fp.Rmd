@@ -113,6 +113,7 @@ head(fbase_data)
 str(fbase_data)
 ```
 
+
 ```{r}
 mod.0 <- lm(deaths ~ 1, data = fbase_data)
 mod.full <- lm(deaths ~ date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
@@ -175,18 +176,38 @@ pairs(deaths ~ date + confirmed + tests + fschool_closing +
 summary(mod.full2)
 ```
 
-
+```{r}
+pt <- powerTransform(cbind(confirmed, tests, fschool_closing, 
+    fworkplace_closing, fgatherings_restrictions, fstay_home_restrictions, 
+    finternal_movement_restrictions, ftesting_policy, fcontact_tracing, 
+    stringency_index) ~ 1, fbase_data)
+summary(pt)
+```
+```{r}
+invTranPlot(y~x)
+```
 
 From this we can see that ftesting_policy3, finternal_movement_restrictions2, fworkplace_closing2, and confirmed are not significant.
 ```{r}
 confint(mod.full2)
 ```
 
+```{r}
+mod.full3 <- lm(deaths ~ date + confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions   +
+            ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+```
 
+```{r}
+summary(mod.full3)
+```
 
-
-
-
+```{r}
+pt <- powerTransform(cbind(confirmed, tests, fschool_closing,
+            fworkplace_closing, fgatherings_restrictions, fstay_home_restrictions  ,
+            ftesting_policy, fcontact_tracing, stringency_index) ~ 1, data = fbase_data)
+summary(pt)
+```
 
 
 ## AIC stepwise model selection
