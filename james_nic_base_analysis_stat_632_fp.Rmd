@@ -83,7 +83,7 @@ nrow(base_data)
 Need to turn the policy measures into factors before we can run a regression model. However factors need to have 2 or more levels in order to work so we will remove cancel_events, international_movement, and transport_closing.
 
 ```{r}
-base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "tests","administrative_area_level_2", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing",  "gatherings_restrictions", "stay_home_restrictions", "internal_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
+base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "tests", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing",  "gatherings_restrictions", "stay_home_restrictions", "internal_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
 
 head(base_data)
 ```
@@ -110,7 +110,7 @@ fbase_data <- base_data %>%
          finformation_campaigns, ftesting_policy, fcontact_tracing)
 
 head(fbase_data)
-
+str(fbase_data)
 ```
 
 ```{r}
@@ -120,26 +120,118 @@ mod.full <- lm(deaths ~ date + confirmed + tests + latitude  + longitude + popul
             finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
 ```
 
+We reject the null hypothesis that there and assume that there is at least one significant predictor in this model.
+
+```{r}
+anova(mod.0, mod.full)
+```
+
+This is not very useful.
+
 ```{r}
 pairs(deaths ~ date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
             fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
             finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
 ```
 
-There are 14 predictors selected out of 16. What does NA here mean?
+We should remove population, longitude, and lattitude as they have no information.i.e. they are the same number for every row.
+
+```{r}
+summary(mod.full)
+```
+
+```{r}
+mod.full1 <- lm(deaths ~ date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
+            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+```
+
+
+```{r}
+summary(mod.full1)
+```
+
+From this we can see that confirmed, fworkplace_closing2, finformation_campaigns2, finternal_movement_restrictions2, and ftesting_policy3 are not statistically significant.
+
+```{r}
+confint(mod.full1)
+```
+
+For mod.full2 we will remove information_campaign due to singularities.
+
+```{r}
+mod.full2 <- lm(deaths ~ date + confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
+            ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+```
+
+```{r}
+pairs(deaths ~ date + confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
+            ftesting_policy + fcontact_tracing + stringency_index)
+```
+
+```{r}
+summary(mod.full2)
+```
+
+
+
+From this we can see that ftesting_policy3, finternal_movement_restrictions2, fworkplace_closing2, and confirmed are not significant.
+```{r}
+confint(mod.full2)
+```
+
+
+
+
+
+
+
+
+## AIC stepwise model selection
+
+There are 14 predictors selected out of 16 (main effects), 26 (main effects plus dummy variables) were selected for each of the 3 full models created.
+
+The chosen variables are fstay_home_restrictions2, fgatherings_restrictions3, fgatherings_restrictions4, fschool_closing3, tests, fworkplace_closing2, f workplace_closing3, finternal_movement_restrictions1, finternal_movement_restrictions2, stringency_index, fcontact_tracing2, ftesting_policy2, ftesting_policy3, and date.
+
+
 ```{r}
 (step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
 ```
 
-The BIC appears to be the same as the AIC.
 ```{r}
-(step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full)))
+(step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full1), trace = 0))
 ```
+
+```{r}
+(step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full2), trace = 0))
+```
+
+
+
+
+
+
+The BIC appears to be the same as the AIC for all three models.
+
+```{r}
+(step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
+```
+
+```{r}
+(step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full1), trace = 0))
+```
+
+```{r}
+(step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full2), trace = 0))
+```
+
 
 Also get different model but still 14 predictors with one NA in this model.
 
 ```{r}
-(step_aicfull <- step(mod.full))
+step_aicfull <- (step_aicfull <- step(mod.full))
 ```
 
 ```{r}
