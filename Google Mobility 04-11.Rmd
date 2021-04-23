@@ -26,12 +26,18 @@ ca_mobility20.21 <- region_mobility20.21 %>%
 # remove unique identifier columns
 ca_mobility.col <- ca_mobility20.21[,-c(5:8)]
 
-# remove N/A
-ca_mobility.omit <- na.omit(ca_mobility.col)
-
-# convert percentages to decimals and make all values positive 
-ca_mobility.dat <- (ca_mobility.omit[,6:11]/100)+0.9
-View(ca_mobility.dat)
+# remove NA and convert to positive decimals
+ca_mobility.dat <- na.omit(ca_mobility.col) %>%
+  mutate(retail_and_recreation_percent_change_from_baseline = retail_and_recreation_percent_change_from_baseline/100+0.9, grocery_and_pharmacy_percent_change_from_baseline = grocery_and_pharmacy_percent_change_from_baseline/100+0.9,
+         parks_percent_change_from_baseline = 
+           parks_percent_change_from_baseline/100+0.9,
+         transit_stations_percent_change_from_baseline =
+           transit_stations_percent_change_from_baseline/100+0.9,
+         workplaces_percent_change_from_baseline = 
+           workplaces_percent_change_from_baseline/100+0.9,
+         residential_percent_change_from_baseline = 
+           residential_percent_change_from_baseline/100+0.9)
+head(ca_mobility.dat)
 ```
 
 
@@ -72,18 +78,29 @@ fbase_data <- base_data %>%
 # merge covid19 and google mobility data
 cacovid_mobility <- merge(x = ca_mobility.dat, y = fbase_data, all = T)
 head(cacovid_mobility)
+tail(cacovid_mobility)
+
 ```
 
-We ran an initial fitted linear model with all nonconstant Google mobility and Covid 19
+
+We ran an initial fitted linear model with all non-constant Google mobility and Covid 19
 data. Immediately, we see that all six predictors from the Google mobility data set 
-do not have significance.
+do not have significance. 
 
 ```{r}
 # full fitted model (omitted lat, long, popln because it stays constant)
-google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + confirmed +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + confirmed +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index + latitude + longitude + population, data = cacovid_mobility)
 
 summary(google.full)
 ```
+
+```{r}
+# subset models
+subset.summary <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + confirmed +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index + latitude + longitude + population, data = cacovid_mobility))
+
+subset.summary
+```
+
 
 Running a residuals vs. fitted and Q-Q plot show that the initial model does not 
 follow a normal distribution. 
@@ -115,7 +132,9 @@ plot(google.log)
 
 
 ```{r}
-step(google.full, scope = list(lower = google.red, upper = google.full))
+n <-
+step(google.full, scope = list(lower = google.red, upper = google.full), trace = 0)
+step(google.full, scope = list(lower = google.red, upper = google.full), trace = 0, k = log(n))
 ```
 
 
