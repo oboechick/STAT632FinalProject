@@ -22,14 +22,17 @@ help("covid19")
 
 # Create df:
 
-US Data by State
+We started by filtering the data first by United States of America, secondly by California, and finally by date. We ended with 365 rows of data for California.
+
 ```{r}
 cacovid19data <- covid19("US", level = 2) %>% 
   filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-14")
 head(cacovid19data)
 tail(cacovid19data)
 ```
-What are the names of all of the columns?
+
+We then looked at all of the variables to look at what variables we should use.
+
 ```{r}
 names(cacovid19data)
 ```
@@ -172,8 +175,12 @@ pairs(deaths ~ date + confirmed + tests + fschool_closing +
             ftesting_policy + fcontact_tracing + stringency_index)
 ```
 
+
 ```{r}
 summary(mod.full2)
+```
+```{r}
+plot(mod.full2)
 ```
 
 ```{r}
@@ -192,10 +199,6 @@ summary(pt2)
 
 
 
-```{r}
-invTranPlot(y~x)
-```
-
 From this we can see that ftesting_policy3, finternal_movement_restrictions2, fworkplace_closing2, and confirmed are not significant.
 ```{r}
 confint(mod.full2)
@@ -211,12 +214,64 @@ mod.full3 <- lm(deaths ~ date + confirmed + tests + fschool_closing +
 summary(mod.full3)
 ```
 
+This is heavy tailed and the residuals have a distinct pattern. So we need to look at transforming the data.
 ```{r}
-pt <- powerTransform(cbind(confirmed, tests, fschool_closing,
-            fworkplace_closing, fgatherings_restrictions, fstay_home_restrictions  ,
-            ftesting_policy, fcontact_tracing, stringency_index) ~ 1, data = fbase_data)
+plot(mod.full3)
+```
+```{r}
+shapiro.test(fbase_data$deaths)
+```
+
+Looks like confirmed , tests, and stringency_index needs a logrithmic transformation.
+
+```{r}
+pt <- powerTransform(cbind(confirmed, tests, stringency_index) ~ 1, data = fbase_data)
 summary(pt)
 ```
+
+```{r}
+mod.full4 <- lm(deaths ~ date + log(confirmed) + log(tests) + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions   +
+            ftesting_policy + fcontact_tracing + log(stringency_index), data = fbase_data)
+```
+
+```{r}
+summary(mod.full4)
+```
+
+This is better than mod.full3
+
+
+```{r}
+plot(mod.full4)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## AIC stepwise model selection
@@ -227,46 +282,74 @@ The chosen variables are fstay_home_restrictions2, fgatherings_restrictions3, fg
 
 
 ```{r}
-(step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
+(step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full4), trace = 0))
 ```
-
-```{r}
-(step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full1), trace = 0))
-```
-
-```{r}
-(step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full2), trace = 0))
-```
-
-
-
 
 
 
 The BIC appears to be the same as the AIC for all three models.
 
 ```{r}
-(step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
+(step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full4), trace = 0))
 ```
+
+
 
 ```{r}
-(step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full1), trace = 0))
-```
-
-```{r}
-(step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full2), trace = 0))
+summary(step_aic)
 ```
 
 
-Also get different model but still 14 predictors with one NA in this model.
 
-```{r}
-step_aicfull <- (step_aicfull <- step(mod.full))
-```
 
-```{r}
-summary(step_aicfull)
-```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
