@@ -91,16 +91,18 @@ Are policy measures that are restrictive with movement more significant than non
 
 ### Important Details
 
-```{r}
+```{r echo=FALSE}
 library(pacman)
 p_load(COVID19, car, tidyverse, ggplot2, dplyr, leaps, readr)
 ```
 
 ### Exploratory Analysis
 
+#### Base Data
+
 We started by filtering the data first by United States of America, secondly by California, and finally by date. We ended with 365 rows of data for California.
 
-```{r}
+```{r echo=FALSE}
 cacovid19data <- covid19("US", level = 2) %>% 
   filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-14")
 head(cacovid19data)
@@ -111,13 +113,11 @@ We then looked at all of the variables to look at what variables we should use. 
 
 We realized that the policy measures needed to be turned into factors before we could run a regression model. We discovered that factors need to have 2 or more levels in order to work so we removed cancel_events, international_movement, and transport_closing.
 
-```{r}
+```{r echo=FALSE}
 base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "tests", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing",  "gatherings_restrictions", "stay_home_restrictions", "internal_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
-
-head(base_data)
 ```
 
-```{r}
+```{r echo=FALSE}
 fschool_closing = as.factor(base_data$school_closing)
 fworkplace_closing <- as.factor(base_data$workplace_closing)
 fgatherings_restrictions <- as.factor(base_data$gatherings_restrictions)
@@ -128,23 +128,18 @@ ftesting_policy <- as.factor(base_data$testing_policy)
 fcontact_tracing <- as.factor(base_data$contact_tracing)
 ```
 
-
-```{r}
+```{r echo=FALSE}
 attach(base_data)
-
 
 fbase_data <- base_data %>% 
   mutate(fschool_closing, fworkplace_closing, fgatherings_restrictions,
          fstay_home_restrictions, finternal_movement_restrictions,
          finformation_campaigns, ftesting_policy, fcontact_tracing)
-
-head(fbase_data)
-str(fbase_data)
 ```
 
 We set the null and full models using the data with factors.
 
-```{r}
+```{r echo=FALSE}
 mod.0 <- lm(deaths ~ 1, data = fbase_data)
 mod.full <- lm(deaths ~ date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
             fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
@@ -153,27 +148,29 @@ mod.full <- lm(deaths ~ date + confirmed + tests + latitude  + longitude + popul
 
 Weran a basic ANOVA to make sure that there was at least one sgnificant variable in our model. We accordingly can now reject the null hypothesis and assume that there is at least one significant predictor in this model.
 
-```{r}
+```{r echo=FALSE}
 anova(mod.0, mod.full)
 ```
 
 We ran the pairs() to start looking to see if the assumptions have been met however, there are too many variables for it to be useful. We then
 
-```{r}
+```{r echo=FALSE}
 summary(mod.full)
 ```
 
 We ran through two more rounds of summary and removed information_campaign and internal_movement_restrictions due to singularities leaving with our final full model called mod.full3.
 
-```{r}
+```{r echo=FALSE}
 mod.full3 <- lm(deaths ~ date + confirmed + tests + fschool_closing +
             fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions   +
             ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
 ```
 
-```{r}
+```{r echo=FALSE}
 summary(mod.full3)
 ```
+
+#### Google Mobility
 
 ### Diagnostic Checks
 
@@ -204,16 +201,25 @@ The young man wanted a role model. He looked long and hard in his youth, but tha
 
 ### Appendix 1: R Code
 
+#### Code Chunk 1:
+
 ### Appendix 2 (optional): Exploratory analysis not used in final paper
 
+#### Base Data:
 ```{r}
 pairs(deaths ~ date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
             fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
             finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
 ```
 
- 
-### Appendix 3: Data Variable Description
+#### Google Mobility Data
+
+
+
+### Appendix 3: World Bank Data Story
+
+
+### Appendix 4: Data Variable Description
 
 -   **date** - Observation date
 
