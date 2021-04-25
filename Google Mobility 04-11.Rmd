@@ -21,7 +21,7 @@ Subsetting Google Mobility data to for linear regression model
 ```{r}
 # subset dataframe range to CA only
 ca_mobility20.21 <- region_mobility20.21 %>% 
-  filter(sub_region_1 == "California", date >= "2020-03-15", date <= "2021-03-15")
+  filter(sub_region_1 == "California", date >= "2020-03-15", date <= "2021-03-14")
 
 # remove unique identifier columns
 ca_mobility.col <- ca_mobility20.21[,-c(5:8)]
@@ -44,7 +44,10 @@ head(ca_mobility.dat)
 Covid-19 base data
 ```{r}
 # covid19 data
-base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "administrative_area_level_2", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing", "gatherings_restrictions", "stay_home_restrictions", "internal_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
+cacovid19data <- covid19("US", level = 2) %>% 
+  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-14")
+
+base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "tests", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing",  "gatherings_restrictions", "stay_home_restrictions", "internal_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
 ```
 
 Factoring base data
@@ -81,22 +84,23 @@ tail(cacovid_mobility)
 ```
 
 
-We ran an initial fitted linear model with all non-constant Google mobility and 
-Covid 19 data.
+We ran an initial fitted linear model of Google mobility and 
+Covid 19 data. We removed all constant data as well as singularities. 
+Removed data includes: Longitude, Latitude, Population, finternal_movement_restrictions2, finformation_campaigns2
 ```{r}
 # full fitted model
-google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + confirmed +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index + latitude + longitude + population, data = cacovid_mobility)
+google.full1 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
+            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+
+# full fitted model w/o non
+google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
 
 summary(google.full)
+plot(google.full)
 ```
 
-Variable selection to show nine possible models
-```{r}
-# subset models
-subset.summary <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + confirmed +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index + latitude + longitude + population, data = cacovid_mobility))
-
-subset.summary
-```
 
 ```{r}
 # null model
@@ -118,6 +122,32 @@ AIC selected model:13 predictors
 -fcontact_tracing  
 -stringency_index
 
+    
+```{r}
+# variable selection with AIC
+step(google.full, scope = list(lower = google.red, upper = google.full), trace = 0)
+
+var_selectAIC <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline  
++grocery_and_pharmacy_percent_change_from_baseline 
++transit_stations_percent_change_from_baseline  
++residential_percent_change_from_baseline 
++confirmed 
++fschool_closing  
++fworkplace_closing 
++fgatherings_restrictions 
++fstay_home_restrictions 
++finternal_movement_restrictions 
++ftesting_policy 
++fcontact_tracing
++stringency_index, data = cacovid_mobility)
+
+summary(var_selectAIC)
+```
+```{r}
+plot(var_selectAIC, which = c(1,2))
+```
+
+
 BIC selected model:12 predictors
 -retail_and_recreation_percent_change_from_baseline  
 -grocery_and_pharmacy_percent_change_from_baseline 
@@ -131,39 +161,58 @@ BIC selected model:12 predictors
 -finternal_movement_restrictions 
 -ftesting_policy 
 -fcontact_tracing
-    
+
 ```{r}
+# variable selection with BIC
 n <- length(cacovid_mobility$deaths)
-step(google.full, scope = list(lower = google.red, upper = google.full), trace = 0)
 step(google.full, scope = list(lower = google.red, upper = google.full), trace = 0, k = log(n))
+
+var_selectBIC <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline  
++grocery_and_pharmacy_percent_change_from_baseline 
++transit_stations_percent_change_from_baseline  
++residential_percent_change_from_baseline 
++confirmed 
++fschool_closing  
++fworkplace_closing 
++fgatherings_restrictions 
++fstay_home_restrictions 
++finternal_movement_restrictions 
++ftesting_policy 
++fcontact_tracing, data = cacovid_mobility)
+
+summary(var_selectBIC)
+```
+```{r}
+# diagnostic plots for BIC selection
+plot(var_selectBIC, which = c(1,2))
 ```
 
 
 ```{r}
-# 
-subset.summary <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + confirmed +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility))
+# best subset regression
+subset.summary <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility))
 
 subset.summary
 subset.summary$adjr2
 subset.summary$cp
 subset.summary$bic
 
-
 ```
 
 After model selection for lowest cp and BIC, and highest adjusted R-squared
 ```{r}
 # after model selection (7 predictors)
-regsubset.fit <- lm(deaths ~ confirmed + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions + ftesting_policy, data = cacovid_mobility)
+regsubset.fit <- lm(deaths ~ date + tests + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
 
 summary(regsubset.fit)
 ```
+
 Relationships between variables in the preferred model
 ```{r}
 cacovid_pairs <- cacovid_mobility %>% 
-  select(deaths, confirmed, fschool_closing, fworkplace_closing, 
-         fgatherings_restrictions, fstay_home_restrictions, 
-         finternal_movement_restrictions, ftesting_policy) 
+  select(deaths, date, tests, fschool_closing, fworkplace_closing, 
+    fstay_home_restrictions, ftesting_policy, fcontact_tracing) 
 pairs(cacovid_pairs)
 ```
 
@@ -171,39 +220,134 @@ pairs(cacovid_pairs)
 Running a residuals vs. fitted and Q-Q plot show that the initial model does not 
 follow a normal distribution. 
 ```{r}
-# diagnostic plots
+# diagnostic plots for regsubset
 plot(regsubset.fit, which = c(1,2))
 ```
-Transformation of all non-factor and significant predictors. The confirmed 
-response can either use a log transformation or no transformation. 
+Transformation of all non-factor predictors. The confirmed 
+response can either use a log transformation or a square root transformation. 
 ```{r}
-pt <- powerTransform(cbind(cacovid_mobility$confirmed) ~ 1)
+pt <- powerTransform(cbind(cacovid_mobility$tests) ~ 1)
 summary(pt)
 ```
 
-No transfomration is necessary
+Either no transformation or square root transformation for the response
 ```{r}
 # optimal lambda for response from full model
 boxCox(regsubset.fit)
-invTranPlot(cacovid_mobility$deaths ~ cacovid_mobility$confirmed, optimal = T)
+```
+
+After checking diagnostic plots for all transformation suggestions, we see that a
+the square root transformation closest meets assumptions for linear regression.
+```{r}
+# square root transformation for both deaths and tests
+regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+# square root transformation for tests
+regsubset.trans2 <- lm(deaths ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+# square root transformation for deaths and log transformation for tests
+regsubset.trans3 <- lm(sqrt(deaths) ~ date + log(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+# log transformation for tests
+regsubset.trans4 <- lm(deaths ~ date + log(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+plot(regsubset.trans1, which = c(1,2))
+plot(regsubset.trans2, which = c(1,2))
+plot(regsubset.trans3, which = c(1,2))
+plot(regsubset.trans4, which = c(1,2))
 ```
 
 ```{r}
-regsubset.log <- lm(deaths ~ log(confirmed) + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions + ftesting_policy, data = cacovid_mobility)
+summary(regsubset.trans1)
+```
 
-plot(regsubset.log, which = c(1,2))
+Is it okay to increase to 4?
+```{r}
+# leverage point calculations
+p <- 7
+n <- nrow(cacovid_mobility)
+cacovid_hat <- hatvalues(regsubset.trans1)
+
+which(cacovid_hat > 4*(p+1)/n)
+```
+
+Choose between $|r_i|>3\;or\;2$ Seeting it to 3 means there are no outliers
+```{r}
+# outlier calculations
+cacovid_std <- rstandard(regsubset.trans1)
+which(abs(cacovid_std) > 3)
+which(abs(cacovid_std) > 2)
 ```
 
 
 ```{r}
-# powerTransform and invTranPlot only work for positive values
-# Yeo-Johnson boxCox works with negative values
-summary(powerTransform(cbind(retail_and_recreation_percent_change_from_baseline + 
-    grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + 
-    transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + 
-    residential_percent_change_from_baseline) ~ 1, merge.dat))
-invTranPlot(merge.dat$deaths ~ merge.dat$retail_and_recreation_percent_change_from_baseline, optimal = T)
+# plot of high leverage points and outliers
+plot(hatvalues(regsubset.trans1), rstandard(regsubset.trans1), xlab = "Leverage", 
+     ylab = "Standardized Residuals", lwd = 0.1, cex = 0.8)
+abline(v = 4*(p+1)/n, col = "red", lty = 2)
+abline(h = c(-2,2), col = "blue", lty =2)
 ```
+There are no Cook's points that are greater than 0.5
+No points will be removed 
+```{r}
+# Cook's points and hat values
+cacovid.cooks <- cooks.distance(regsubset.trans1)
+which(cacovid.cooks > 4/(n-p-1))
+influenceIndexPlot(regsubset.trans1, vars = "Cook")
+influenceIndexPlot(regsubset.trans1, vars = "hat")
+```
+Alternative: We remove data points with high Cook's values relative to other points.
+This does not affect the significance of the transformed model regsubset.trans1
+Ultimately, we will not remove high Cook's points
+```{r}
+cacovid_mobility1 <- cacovid_mobility[-c(12484:12596),]
+
+regsubset.cooks <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility1) 
+
+summary(regsubset.cooks)
+```
+
+```{r}
+plot(regsubset.cooks)
+```
+
+```{r}
+influenceIndexPlot(regsubset.cooks, vars = "Cook")
+```
+
+Proposed final model
+
+Response: square root of deaths
+
+Predictors:
+-square root of tests
+-fschool_closing
+-fworkplace_closing
+-fstay_home_restrictions
+-ftesting_policy
+-fcontact_tracing
+```{r}
+regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+```
+
+
+## Google Mobility Write-up
+Our initial objective was to find out if running a linear regression of the 
+Google Mobility data with the Covid-19 data had any significance in predicting 
+the rate of deaths due to Covid-19. The Google mobility data recorded 
+travel trends to categorized locations during the Covid-19 pandemic. This data 
+is compared against a baseline reading; that is, the median value of each day of 
+the week during a 5‑week period (Jan 3 – Feb 6, 2020).
+
+In order to choose the ideal model, we fit the combined data and ran variable 
+selections to identify the model with the lowest cp and BIC values, and the
+highest adjusted R-squared value. The result of this selection process concluded
+that the travel trends of the Google mobility data are not significant in 
+predicting deaths due to Covid-19. That is, the final model selected only 
+includes data from the Covid-19 data set.
+
+
+
 
 
 
