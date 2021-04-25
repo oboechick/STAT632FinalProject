@@ -106,7 +106,6 @@ fcontact_tracing <- as.factor(base_data$contact_tracing)
 ```{r}
 attach(base_data)
 
-
 fbase_data <- base_data %>% 
   mutate(fschool_closing, fworkplace_closing, fgatherings_restrictions,
          fstay_home_restrictions, finternal_movement_restrictions,
@@ -246,33 +245,95 @@ This is better than mod.full3
 plot(mod.full4)
 ```
 
+```{r}
+# leverage point calculations
+p <- 10
+n <- nrow(fbase_data)
+mod.full4_hat <- hatvalues(mod.full4)
+
+which(mod.full4_hat > 4*(p+1)/n)
+```
+
+Outliers.
+```{r}
+mod.full4_out <- rstandard(mod.full4)
+which(abs(mod.full4_out) > 3)
+```
 
 
+```{r}
+# plot of high leverage points and outliers
+plot(hatvalues(mod.full4), rstandard(mod.full4), xlab = "Leverage", 
+     ylab = "Standardized Residuals")
+abline(v = 4*(p+1)/n, col = "red", lty = 2)
+abline(h = c(-3,3), col = "blue", lty =2)
+```
+Looks like only one point needs to be investigated, 5.
+```{r}
+# Cook's points and hat values
+mod.full4.cooks <- cooks.distance(mod.full4)
+which(mod.full4.cooks > 4/(n-p-1))
+influenceIndexPlot(mod.full4, vars = "Cook")
+influenceIndexPlot(mod.full4, vars = "hat")
+```
+
+Remove all leverage and outliers from fbase_data.
+
+```{r}
+
+fbase_data1<-fbase_data[-c(1, 2, 3, 4, 5, 351, 352, 353, 354), ]
+
+head(fbase_data1)
+```
+
+Run tests again.
+
+```{r}
+mod.full5 <- lm(deaths ~ date + log(confirmed) + log(tests) + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions   +
+            ftesting_policy + fcontact_tracing + log(stringency_index), data = fbase_data1)
+```
+
+```{r}
+summary(mod.full5)
+```
 
 
+```{r}
+plot(mod.full5)
+```
+
+```{r}
+# leverage point calculations
+p <- 10
+n <- nrow(fbase_data1)
+mod.full5_hat <- hatvalues(mod.full5)
+
+which(mod.full5_hat > 4*(p+1)/n)
+```
+
+Outliers.
+```{r}
+mod.full5_out <- rstandard(mod.full5)
+which(abs(mod.full5_out) > 3)
+```
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```{r}
+# plot of high leverage points and outliers
+plot(hatvalues(mod.full5), rstandard(mod.full5), xlab = "Leverage", 
+     ylab = "Standardized Residuals")
+abline(v = 4*(p+1)/n, col = "red", lty = 2)
+abline(h = c(-3,3), col = "blue", lty =2)
+```
+Looks like only one point needs to be investigated, 5.
+```{r}
+# Cook's points and hat values
+mod.full5.cooks <- cooks.distance(mod.full5)
+which(mod.full5.cooks > 4/(n-p-1))
+influenceIndexPlot(mod.full5, vars = "Cook")
+influenceIndexPlot(mod.full5, vars = "hat")
+```
 
 ## AIC stepwise model selection
 
@@ -298,6 +359,30 @@ The BIC appears to be the same as the AIC for all three models.
 ```{r}
 summary(step_aic)
 ```
+# Base Data Final write up
+
+We wanted to know what predictors would be the best to use when running a linear regression of the original Covid-19 data to predict the rate of deaths due to Covid-19. 
+
+We chose to forgo using AIC and BIC initially and did an analysis by hand. However, after we finished we ran it and the variables chosen by the AIC and BIC were the same as the model we decided to use. Our final model ended up being the same as that chosen by the AIC and BIC. The final model is:
+
+deaths ~ date + log(confirmed) + log(tests) + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + log(stringency_index)
+
+For the base data in order to meet the diagnostics for linear regression we removed lines 1-5, and 351-354. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
