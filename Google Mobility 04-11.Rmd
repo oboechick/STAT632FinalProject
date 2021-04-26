@@ -96,9 +96,10 @@ google.full1 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline +
 # full fitted model w/o non
 google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing +
             fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
-
+summary(google.full1)
 summary(google.full)
-plot(google.full)
+
+plot(google.full, which = c(1,2))
 ```
 
 
@@ -303,7 +304,6 @@ Ultimately, we will not remove high Cook's points
 cacovid_mobility1 <- cacovid_mobility[-c(12484:12596),]
 
 regsubset.cooks <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility1) 
-
 summary(regsubset.cooks)
 ```
 
