@@ -347,6 +347,16 @@ predicting deaths due to Covid-19. That is, the final model selected only
 includes data from the Covid-19 data set.
 
 
+```{r}
+# final model comparison
+bd <- lm(deaths ~ date + confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions   +
+            ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+
+gm <- lm(deaths ~ date + tests + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+anova(gm, bd)
+```
 
 
 
