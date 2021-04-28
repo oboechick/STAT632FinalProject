@@ -231,7 +231,7 @@ boxCox(mod.full4)
 ```
 
 ```{r}
-mod.full4 <- lm(deaths ~ date + log(confirmed) + log(tests) + fschool_closing +
+mod.full4 <- lm((deaths)^(1/3) ~ date + log(confirmed) + log(tests) + fschool_closing +
             fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions   +
             ftesting_policy + fcontact_tracing + log(stringency_index), data = fbase_data)
 ```
@@ -283,7 +283,7 @@ Remove all leverage and outliers from fbase_data.
 
 ```{r}
 
-fbase_data1<-fbase_data[-c(1, 2, 3, 4, 5, 351, 352, 353, 354), ]
+fbase_data1<-fbase_data[-c(1, 2, 3, 4, 5), ]
 
 head(fbase_data1)
 ```
