@@ -252,6 +252,29 @@ regsubset.trans3 <- lm(sqrt(deaths) ~ date + log(tests) + fschool_closing + fwor
 # log transformation for tests
 regsubset.trans4 <- lm(deaths ~ date + log(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
 
+# transformed model with only numerical variables
+regsubset.trans5 <- lm(sqrt(deaths) ~ date + sqrt(tests))
+plot(regsubset.trans5, which = c(1,2))
+
+# transformed model with only categorical variables
+regsubset.trans6 <- lm(sqrt(deaths) ~ fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+plot(regsubset.trans6, which = c(1,2))
+
+regsubset.trans7 <- lm(sqrt(deaths) ~ date + I(tests^(1/3)) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+# linear fit with google mobility and only categorical values from base covid
+google.factors <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+plot(google.factors, which = c(1,2))
+
+boxCox(google.factors)
+
+google.factors1 <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility)
+
+plot(google.factors1, which = c(1,2))
+
+boxCox(google.factors1)
+
 plot(regsubset.trans1, which = c(1,2))
 plot(regsubset.trans2, which = c(1,2))
 plot(regsubset.trans3, which = c(1,2))
