@@ -281,6 +281,78 @@ plot(regsubset.trans3, which = c(1,2))
 plot(regsubset.trans4, which = c(1,2))
 ```
 
+
+```{r}
+# full google model (summary and diagnostics) - workplaces not sig
+google.dat <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility)
+
+summary(google.dat)
+
+plot(google.dat)
+
+# variable selection (5 var model) - suggests to take out workplaces
+google.varselect <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility))
+
+google.varselect
+google.varselect$adjr2
+google.varselect$cp
+google.varselect$bic
+
+# linear model fit without workplace variable
+google.fivevar <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility)
+
+summary(google.fivevar)
+
+plot(google.fivevar)
+
+# transformation of predictors
+pt1 <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline, cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline, cacovid_mobility$parks_percent_change_from_baseline, cacovid_mobility$transit_stations_percent_change_from_baseline, cacovid_mobility$residential_percent_change_from_baseline) ~ 1)
+
+summary(pt1)
+
+# linear model fit with transformed predictors
+google.vartrans <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + I(residential_percent_change_from_baseline^-3), data = cacovid_mobility)
+
+summary(google.vartrans)
+plot(google.vartrans)
+
+# transformation of response
+boxCox(google.vartrans)
+
+# linear fit with full transformation (suggested model via variable selection)
+google.fulltrans <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + I(residential_percent_change_from_baseline^-3), data = cacovid_mobility)
+
+# linear fit with full transformation and ignoring variable selection (not very many variables to begin with)
+google.workplace <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + I(residential_percent_change_from_baseline^-3), data = cacovid_mobility)
+
+# outliers and leverage points plot (only two bad leverage points, but do not significantly affect the model by removing them)
+plot(hatvalues(google.workplace), rstandard(google.workplace), xlab = "Leverage", 
+     ylab = "Standardized Residuals", lwd = 0.1, cex = 0.8, ylim = c(-6,6), xlim = c(0,0.01))
+abline(v = 4*(p+1)/n, col = "red", lty = 2)
+abline(h = c(-4,4), col = "blue", lty =2)
+
+# leverage points
+p <- 7
+n <- nrow(cacovid_mobility)
+google_hat <- hatvalues(google.workplace)
+which(google_hat > 4*(p+1)/n)
+
+# outliers
+google.std <- rstandard(google.workplace)
+which(abs(google.std) > 4)
+
+# comparison of final models with and without workplace var 
+summary(google.workplace)
+summary(google.fulltrans)
+plot(google.fulltrans)
+plot(google.workplace)
+
+# conclusion is that the 6 model variable, after transformations, has a slightly higher adjusted R-squared and workplace is significant
+# also QQ plot and residuals looks slightly better with 6 model variable
+```
+
+
+
 ```{r}
 summary(regsubset.trans1)
 ```
@@ -295,7 +367,7 @@ cacovid_hat <- hatvalues(regsubset.trans1)
 which(cacovid_hat > 4*(p+1)/n)
 ```
 
-Choose between $|r_i|>3\;or\;2$ Seeting it to 3 means there are no outliers
+Choose between $|r_i|>3\;or\;2$ Setting it to 3 means there are no outliers
 ```{r}
 # outlier calculations
 cacovid_std <- rstandard(regsubset.trans1)
