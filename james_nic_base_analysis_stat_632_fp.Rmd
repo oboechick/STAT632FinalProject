@@ -81,6 +81,7 @@ All variables have data in every row now.
 ```{r}
 str(base_data)
 nrow(base_data)
+summary(base_data)
 ```
 
 Need to turn the policy measures into factors before we can run a regression model. However factors need to have 2 or more levels in order to work so we will remove cancel_events, international_movement, and transport_closing.
@@ -198,6 +199,7 @@ summary(pt2)
 
 
 
+
 From this we can see that ftesting_policy3, finternal_movement_restrictions2, fworkplace_closing2, and confirmed are not significant.
 ```{r}
 confint(mod.full2)
@@ -217,15 +219,15 @@ This is heavy tailed and the residuals have a distinct pattern. So we need to lo
 ```{r}
 plot(mod.full3)
 ```
-```{r}
-shapiro.test(fbase_data$deaths)
-```
 
 Looks like confirmed , tests, and stringency_index needs a logrithmic transformation.
 
 ```{r}
 pt <- powerTransform(cbind(confirmed, tests, stringency_index) ~ 1, data = fbase_data)
 summary(pt)
+```
+```{r}
+boxCox(mod.full4)
 ```
 
 ```{r}
@@ -359,6 +361,8 @@ The BIC appears to be the same as the AIC for all three models.
 ```{r}
 summary(step_aic)
 ```
+
+
 # Base Data Final write up
 
 We wanted to know what predictors would be the best to use when running a linear regression of the original Covid-19 data to predict the rate of deaths due to Covid-19. 
@@ -467,8 +471,25 @@ View(cacovid_mobility)
 
 
 
+```{r}
+mod.0 <- lm(deaths ~ 1, data = fbase_data)
+mod.full6 <- lm(deaths ~ fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
+            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+```
 
+We reject the null hypothesis that there and assume that there is at least one significant predictor in this model.
 
+```{r}
+anova(mod.0, mod.full6)
+```
+```{r}
+summary(mod.full6)
+```
+
+```{r}
+plot(mod.full6)
+```
 
 
 
