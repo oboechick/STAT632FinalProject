@@ -304,26 +304,62 @@ google.fivevar <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline
 summary(google.fivevar)
 
 plot(google.fivevar)
+```
 
-# transformation of predictors
+```{r}
+# transformation of predictors w/o workplace
 pt1 <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline, cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline, cacovid_mobility$parks_percent_change_from_baseline, cacovid_mobility$transit_stations_percent_change_from_baseline, cacovid_mobility$residential_percent_change_from_baseline) ~ 1)
 
 summary(pt1)
 
-# linear model fit with transformed predictors
+# transformation of predictors w/ workplace
+pt2 <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline, cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline, cacovid_mobility$parks_percent_change_from_baseline, cacovid_mobility$transit_stations_percent_change_from_baseline, cacovid_mobility$workplaces_percent_change_from_baseline, cacovid_mobility$residential_percent_change_from_baseline) ~ 1)
+
+summary(pt2)
+
+# 5 var model fit with transformed predictors
 google.vartrans <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + I(residential_percent_change_from_baseline^-3), data = cacovid_mobility)
 
+par(mfrow = c(1,2))
+plot(google.vartrans, which = c(1,2))
 summary(google.vartrans)
-plot(google.vartrans)
 
-# transformation of response
+# 6 var model fit with transformed predictors
+google.vartrans6 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + I(residential_percent_change_from_baseline^-2), data = cacovid_mobility)
+
+par(mfrow = c(1,2))
+plot(google.vartrans6, which = c(1,2))
+summary(google.vartrans6)
+```
+
+```{r}
+
+# transformation of response 5 var
 boxCox(google.vartrans)
+
+# transformation of response 6 var
+boxCox(google.vartrans6)
 
 # linear fit with full transformation (suggested model via variable selection)
 google.fulltrans <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + I(residential_percent_change_from_baseline^-3), data = cacovid_mobility)
 
-# linear fit with full transformation and ignoring variable selection (not very many variables to begin with)
-google.workplace <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + I(residential_percent_change_from_baseline^-3), data = cacovid_mobility)
+# linear fit with full transformation and ignoring variable selection workplace^-2
+google.workplace2 <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + I(residential_percent_change_from_baseline^-2), data = cacovid_mobility)
+
+# linear fit with full transformation and ignoring variable selection workplace^-3
+google.workplace3 <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + I(residential_percent_change_from_baseline^-3), data = cacovid_mobility)
+
+# comparison of final models with and without workplace var 
+summary(google.workplace2)
+summary(google.workplace3)
+par(mfrow = c(1,2))
+plot(google.workplace2, which = c(1,2))
+plot(google.workplace3, which = c(1,2))
+
+summary(google.fulltrans)
+par(mfrow = c(1,2))
+plot(google.fulltrans, which = c(1,2))
+plot(google.workplace2, which = c(1,2))
 
 # outliers and leverage points plot (only two bad leverage points, but do not significantly affect the model by removing them)
 plot(hatvalues(google.workplace), rstandard(google.workplace), xlab = "Leverage", 
@@ -341,14 +377,9 @@ which(google_hat > 4*(p+1)/n)
 google.std <- rstandard(google.workplace)
 which(abs(google.std) > 4)
 
-# comparison of final models with and without workplace var 
-summary(google.workplace)
-summary(google.fulltrans)
-plot(google.fulltrans)
-plot(google.workplace)
-
 # conclusion is that the 6 model variable, after transformations, has a slightly higher adjusted R-squared and workplace is significant
 # also QQ plot and residuals looks slightly better with 6 model variable
+summary(google.workplace)
 ```
 
 
