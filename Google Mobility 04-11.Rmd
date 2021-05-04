@@ -218,8 +218,7 @@ pairs(cacovid_pairs)
 ```
 
 
-Running a residuals vs. fitted and Q-Q plot show that the initial model does not 
-follow a normal distribution. 
+Running a residuals vs. fitted and Q-Q plot show that the initial model does not follow a normal distribution. 
 ```{r}
 # diagnostic plots for regsubset
 plot(regsubset.fit, which = c(1,2))

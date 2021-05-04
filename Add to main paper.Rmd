@@ -1,0 +1,160 @@
+---
+title: "Untitled"
+author: "Thomas Li"
+date: "5/1/2021"
+output: pdf_document
+---
+
+
+### Appendix 2 (optional): Exploratory analysis not used in final paper
+
+#### Covid19 Restriction and Google Mobility Merged Data
+
+AIC selected model:13 predictors
+-retail_and_recreation_percent_change_from_baseline
+-grocery_and_pharmacy_percent_change_from_baseline
+-transit_stations_percent_change_from_baseline
+-residential_percent_change_from_baseline
+-confirmed
+-fschool_closing
+-fworkplace_closing
+-fgatherings_restrictions
+-fstay_home_restrictions 
+-finternal_movement_restrictions
+-ftesting_policy
+-fcontact_tracing  
+-stringency_index
+
+```{r}
+# variable selection with AIC
+step(google.full, scope = list(lower = google.red, upper = google.full), trace = 0)
+
+var_selectAIC <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline  
++grocery_and_pharmacy_percent_change_from_baseline 
++transit_stations_percent_change_from_baseline  
++residential_percent_change_from_baseline 
++confirmed 
++fschool_closing  
++fworkplace_closing 
++fgatherings_restrictions 
++fstay_home_restrictions 
++finternal_movement_restrictions 
++ftesting_policy 
++fcontact_tracing
++stringency_index, data = cacovid_mobility)
+
+summary(var_selectAIC)
+
+# diagnostic plots for AIC selection
+plot(var_selectAIC, which = c(1,2))
+```
+
+BIC selected model:12 predictors
+-retail_and_recreation_percent_change_from_baseline  
+-grocery_and_pharmacy_percent_change_from_baseline 
+-transit_stations_percent_change_from_baseline  
+-residential_percent_change_from_baseline 
+-confirmed 
+-fschool_closing  
+-fworkplace_closing 
+-fgatherings_restrictions 
+-fstay_home_restrictions 
+-finternal_movement_restrictions 
+-ftesting_policy 
+-fcontact_tracing
+
+```{r}
+# variable selection with BIC
+n <- length(cacovid_mobility$deaths)
+step(google.full, scope = list(lower = google.red, upper = google.full), trace = 0, k = log(n))
+
+var_selectBIC <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline  
++grocery_and_pharmacy_percent_change_from_baseline 
++transit_stations_percent_change_from_baseline  
++residential_percent_change_from_baseline 
++confirmed 
++fschool_closing  
++fworkplace_closing 
++fgatherings_restrictions 
++fstay_home_restrictions 
++finternal_movement_restrictions 
++ftesting_policy 
++fcontact_tracing, data = cacovid_mobility)
+
+summary(var_selectBIC)
+
+# diagnostic plots for BIC selection
+plot(var_selectBIC, which = c(1,2))
+```
+
+Relationships between variables in the preferred model (Regsubset)
+```{r}
+cacovid_pairs <- cacovid_mobility %>% 
+  select(deaths, date, tests, fschool_closing, fworkplace_closing, 
+    fstay_home_restrictions, ftesting_policy, fcontact_tracing) 
+pairs(cacovid_pairs)
+```
+
+After checking diagnostic plots for all transformation suggestions, we see that a
+the square root transformation closest meets assumptions for linear regression.
+```{r}
+# square root transformation for both deaths and tests
+regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+# square root transformation for tests
+regsubset.trans2 <- lm(deaths ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+# square root transformation for deaths and log transformation for tests
+regsubset.trans3 <- lm(sqrt(deaths) ~ date + log(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+# log transformation for tests
+regsubset.trans4 <- lm(deaths ~ date + log(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+
+
+regsubset.trans7 <- lm(sqrt(deaths) ~ date + I(tests^(1/3)) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+# linear fit with google mobility and only categorical values from base covid
+google.factors <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+plot(google.factors, which = c(1,2))
+
+boxCox(google.factors)
+
+google.factors1 <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility)
+
+plot(google.factors1, which = c(1,2))
+
+boxCox(google.factors1)
+
+plot(regsubset.trans1, which = c(1,2))
+plot(regsubset.trans2, which = c(1,2))
+plot(regsubset.trans3, which = c(1,2))
+plot(regsubset.trans4, which = c(1,2))
+```
+
+### Appendix 4: Data Variable Description
+
+-   **retail_and_recreation_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as retail and recreation
+
+-   **grocery_and_pharmacy_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as grcoery stores and pharmacies
+
+-   **parks_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as outdoor parks
+
+-   **transit_stations_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as transit stations
+
+-   **workplaces_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as work places
+
+-   **residential_percent_change_from_baseline* +** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as residential 
