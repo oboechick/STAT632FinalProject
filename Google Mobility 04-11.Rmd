@@ -143,8 +143,7 @@ var_selectAIC <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline
 +stringency_index, data = cacovid_mobility)
 
 summary(var_selectAIC)
-```
-```{r}
+
 plot(var_selectAIC, which = c(1,2))
 ```
 
@@ -381,6 +380,12 @@ which(abs(google.std) > 4)
 summary(google.workplace)
 ```
 
+```{r}
+# linear fit with full transformation and adding back in categorical data
+google.workplace3 <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + I(residential_percent_change_from_baseline^-2) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy + fcontact_tracing, data = cacovid_mobility)
+summary(google.workplace3)
+plot(google.workplace3, which = c(1,2))
+```
 
 
 ```{r}
@@ -440,7 +445,8 @@ plot(regsubset.cooks)
 influenceIndexPlot(regsubset.cooks, vars = "Cook")
 ```
 
-Proposed final model
+Proposed Model of variable selection with Google mobility and categorical data. 
+All Google mobility data was taken out.
 
 Response: square root of deaths
 
@@ -452,7 +458,8 @@ Predictors:
 -ftesting_policy
 -fcontact_tracing
 ```{r}
-regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + 
+                         fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
 ```
 
 
@@ -473,7 +480,7 @@ includes data from the Covid-19 data set.
 
 
 ```{r}
-# final model comparison
+# final model comparison without transformations
 bd <- lm(deaths ~ date + confirmed + tests + fschool_closing +
             fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions   +
             ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
@@ -484,5 +491,11 @@ anova(gm, bd)
 ```
 
 
+```{r}
+# linear fit with full transformation and adding back in all categorical data
+google.workplace3 <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + I(residential_percent_change_from_baseline^-2) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy + fcontact_tracing, data = cacovid_mobility)
+summary(google.workplace3)
+plot(google.workplace3, which = c(1,2))
+```
 
 
