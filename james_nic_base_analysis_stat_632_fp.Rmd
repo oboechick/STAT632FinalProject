@@ -240,8 +240,7 @@ mod.full4 <- lm((deaths)^(1/3) ~ date + log(confirmed) + log(tests) + fschool_cl
 summary(mod.full4)
 ```
 
-This is better than mod.full3
-
+This is better than mod.full3So our final model is $\hat{deaths^{1/3}} = -1144 + 0.061date + 2.262 log(confirmed) - 9.720log(tests) - 1.483 school closing 3 + workplace closing +workplace closing + gatherings restrictions + stay home restrictions + testing policy + contact tracing + log(stringency index)$
 
 ```{r}
 plot(mod.full4)
@@ -413,11 +412,30 @@ For the base data in order to meet the diagnostics for linear regression we remo
 
 
 
+```{r}
+mod.full10 <- lm(deaths ~ confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
+            ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+```
+
+```{r}
+pairs(deaths ~ confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
+            ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+```
+
+
+```{r}
+summary(mod.full10)
+```
 
 
 
 
-
+```{r}
+library(ggplot2)
+ggplot(deaths, aes(fschool_closing, ))
+```
 
 
 
