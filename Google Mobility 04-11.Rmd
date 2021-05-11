@@ -535,10 +535,14 @@ retail_and_recreation_percent_change_from_baseline needs a transformation to the
 grocery_and_pharmacy_percent_change_from_baseline needs a transformation to the power of 3/4
 
 ```{r}
-google.transform1 <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline, cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline) ~ 1)
+google.transform1 <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline, 
+                                          cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline) ~ 1)
 
 summary(google.transform1)
 ```
+
+After using powerTransform(), we decided on transforming retail and recreation 
+to the power of 3/2 and transforming grocery and pharmacy to the power of 3/4
 
 ```{r}
 google.category2 <- lm(deaths ~ I(retail_and_recreation_percent_change_from_baseline^(3/2)) + I(grocery_and_pharmacy_percent_change_from_baseline^(3/4)) + fschool_closing + fworkplace_closing +  ftesting_policy + fcontact_tracing, data = cacovid_mobility)
@@ -547,10 +551,14 @@ summary(google.category2)
 plot(google.category2, which = c(1,2))
 ```
 
+boxCox() suggests a square root transformation for the response
+
 ```{r}
-bc.transform <- boxCox(google.category2)
+bc.transform <- boxCox(google.category2, lambda=seq(-1, 1, by=0.1))
 bc.transform$x[which.max(bc.transform$y)]
 ```
+
+This is the fully transformed linear model
 
 ```{r}
 google.category3 <- lm(sqrt(deaths) ~ I(retail_and_recreation_percent_change_from_baseline^(3/2)) + I(grocery_and_pharmacy_percent_change_from_baseline^(3/4)) + fschool_closing + fworkplace_closing +  ftesting_policy + fcontact_tracing, data = cacovid_mobility)
@@ -559,28 +567,31 @@ summary(google.category3)
 plot(google.category3, which = c(1,2))
 ```
 
+We plot the leverage points and outliers to check for bad leverage points.
+
 ```{r}
 # plot of high leverage points and outliers
 plot(hatvalues(google.category3), rstandard(google.category3), xlab = "Leverage", 
-     ylab = "Standardized Residuals", lwd = 0.8, cex = 0.8)
+     ylab = "Standardized Residuals", lwd = 0.8, cex = 0.8, ylim = c(-4,4))
 abline(v = 4*(p+1)/n, col = "red", lty = 2)
-abline(h = c(-2,2), col = "blue", lty =2)
+abline(h = c(-3,3), col = "blue", lty =2)
 ```
 
-Checking for high leverage points and outliers
+Checking for high leverage points and outliers. There are no bad leverage points.
+
 ```{r}
 # leverage point calculations
-p <- 7
+p <- 6
 n <- nrow(cacovid_mobility)
 google.hat <- hatvalues(google.category3)
-which(google.hat > 4*(p+1)/n)
-```
+which(google.hat > 3*mean(google.hat))
 
-```{r}
 # outlier calculations
 google.std <- rstandard(google.category3)
 which(abs(google.std) > 3)
 ```
+
+Visually checking Cook's and hat values. It does not look like it is necessary to remove any point.
 
 ```{r}
 # Cook's points and hat values
@@ -588,5 +599,21 @@ google.cooks <- cooks.distance(google.category3)
 which(google.cooks > 4/(n-p-1))
 influenceIndexPlot(google.category3, vars = "Cook")
 influenceIndexPlot(google.category3, vars = "hat")
+```
+
+We remove the highest Cook's value and see that there is no significant difference between the
+two models after comparing the diagnostic plots and summaries.
+
+```{r}
+cacovid_mobility65 <- cacovid_mobility[-65, ]
+
+google.category4 <- lm(sqrt(deaths) ~ I(retail_and_recreation_percent_change_from_baseline^(3/2)) + I(grocery_and_pharmacy_percent_change_from_baseline^(3/4)) + fschool_closing + fworkplace_closing +  ftesting_policy + fcontact_tracing, data = cacovid_mobility65)
+
+summary(google.category4)
+plot(google.category4, which = c(1,2))
+
+google.cooks1 <- cooks.distance(google.category4)
+which(google.cooks1 > 4/(n-p-1))
+influenceIndexPlot(google.category4, vars = "Cook")
 ```
 
