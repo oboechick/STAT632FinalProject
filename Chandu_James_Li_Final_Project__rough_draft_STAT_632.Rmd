@@ -19,7 +19,7 @@ The young man wanted a role model. He looked long and hard in his youth, but tha
 
 The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
 
-## Data Description - Nic
+## Data Description
 
 This data set is a collection of governmental sources at national, regional, and city levels from 190 countries for COVID19. It includes time series of vaccines, test, cases, deaths, recovered, intensive therapy, and policy measures by Oxford COVID-19 Government Response Tracker. We will used the World Bank Google Mobility Reports as well.
 
@@ -35,9 +35,6 @@ date, confirmed, tests, population, latitude, longitude, school_closing, workpla
 
 **key_google_mobility** - Identifier used in Google Mobility Reports.
 
-**key_apple_mobility** - Identifier used in Apple Mobility Reports.
-
-**wb** - World Bank Data
 
 ## Questions of Interest
 
@@ -100,97 +97,7 @@ p_load(COVID19, car, tidyverse, ggplot2, dplyr, leaps, readr)
 
 ### Exploratory Analysis
 
-#### Base Data
 
-We started by filtering the data first by United States of America, secondly by California, and finally by date. We ended with 365 rows of data for California.
-
-```{r echo=FALSE}
-cacovid19data <- covid19("US", level = 2) %>% 
-  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-14")
-head(cacovid19data)
-tail(cacovid19data)
-```
-
-We then looked at all of the variables to look at what variables we should use. We narrowed it down to date, confirmed, deaths, tests, population, latitude, longitude, school closing, workplace closing, canceled events, transport closing, stay home restrictions, internal movement restrictions, international movement restrictions, information campaigns, testing policy, contact tracing, and stringency index for the base data set. 
-
-We realized that the policy measures needed to be turned into factors before we could run a regression model. We discovered that factors need to have 2 or more levels in order to work so we removed cancel_events, international_movement, and transport_closing.
-
-```{r echo=FALSE}
-base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "tests", "latitude"  , "longitude", "population",  "school_closing", "workplace_closing",  "gatherings_restrictions", "stay_home_restrictions", "internal_movement_restrictions", "information_campaigns", "testing_policy", "contact_tracing", "stringency_index"))
-```
-
-```{r echo=FALSE}
-fschool_closing = as.factor(base_data$school_closing)
-fworkplace_closing <- as.factor(base_data$workplace_closing)
-fgatherings_restrictions <- as.factor(base_data$gatherings_restrictions)
-fstay_home_restrictions <- as.factor(base_data$stay_home_restrictions)
-finternal_movement_restrictions <- as.factor(base_data$internal_movement_restrictions)
-finformation_campaigns <- as.factor(base_data$information_campaigns)
-ftesting_policy <- as.factor(base_data$testing_policy)
-fcontact_tracing <- as.factor(base_data$contact_tracing)
-```
-
-```{r echo=FALSE}
-attach(base_data)
-
-fbase_data <- base_data %>% 
-  mutate(fschool_closing, fworkplace_closing, fgatherings_restrictions,
-         fstay_home_restrictions, finternal_movement_restrictions,
-         finformation_campaigns, ftesting_policy, fcontact_tracing)
-```
-
-We set the null and full models using the data with factors.
-
-```{r echo=FALSE}
-mod.0 <- lm(deaths ~ 1, data = fbase_data)
-mod.full <- lm(deaths ~ date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
-            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
-            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
-```
-
-We ran a basic ANOVA to make sure that there was at least one sgnificant variable in our model. We accordingly can now reject the null hypothesis and assume that there is at least one significant predictor in this model.
-
-```{r echo=FALSE}
-anova(mod.0, mod.full)
-```
-
-We ran the pairs() to start looking to see if the assumptions have been met however, there are too many variables for it to be useful. We then
-
-```{r echo=FALSE}
-summary(mod.full)
-```
-
-We ran through two more rounds of summary and removed information_campaign and internal_movement_restrictions due to singularities leaving with our final full model called mod.full3.
-
-```{r echo=FALSE}
-mod.full3 <- lm(deaths ~ date + confirmed + tests + fschool_closing +
-            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions   +
-            ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
-```
-
-```{r echo=FALSE}
-summary(mod.full3)
-```
-
-#### Google Mobility
-
-### Diagnostic Checks
-
-#### Base Data:
-
-```{r}
-plot(mod.full3, 1:2)
-```
-
-This is heavy tailed and the residuals have a distinct pattern. So we need to look at transforming the data.
-
-```{r}
-pt <- powerTransform(cbind(confirmed, tests, fschool_closing,
-            fworkplace_closing, fgatherings_restrictions, fstay_home_restrictions  ,
-            ftesting_policy, fcontact_tracing, stringency_index) ~ 1, data = fbase_data)
-summary(pt)
-```
-#### Google Mobility
 
 ### Interpretation
 
@@ -261,7 +168,35 @@ pairs(deaths ~ date + confirmed + tests + latitude  + longitude + population +  
 
 -   **contact_tracing** - 0: No contact tracing - 1: Limited contact tracing, not done for all cases - 2: Comprehensive contact tracing, done for all cases.
 
-**stringency_index** - Stringency of governmental responses.
+-   **stringency_index** - Stringency of governmental responses.
+
+
+-   **retail_and_recreation_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as retail and recreation
+
+-   **grocery_and_pharmacy_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as grocery stores and pharmacies
+
+-   **parks_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as outdoor parks
+
+-   **transit_stations_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as transit stations
+
+-   **workplaces_percent_change_from_baseline** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as work places
+
+-   **residential_percent_change_from_baseline* +** - comparison of 
+pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
+classified as residential 
+
+**wb** - World Bank Data
+
 ## Source
 
      <URL: https://covid19datahub.io>

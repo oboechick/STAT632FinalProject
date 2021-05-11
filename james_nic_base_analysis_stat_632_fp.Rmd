@@ -464,6 +464,7 @@ boxplot(deaths ~  + fcontact_tracing, data = fbase_data, ylab = "", xlab = "")
 ```
 
 
+
 ```{r}
 avPlots(mod.full11)
 ```
