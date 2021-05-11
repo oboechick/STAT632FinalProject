@@ -609,11 +609,20 @@ cacovid_mobility65 <- cacovid_mobility[-65, ]
 
 google.category4 <- lm(sqrt(deaths) ~ I(retail_and_recreation_percent_change_from_baseline^(3/2)) + I(grocery_and_pharmacy_percent_change_from_baseline^(3/4)) + fschool_closing + fworkplace_closing +  ftesting_policy + fcontact_tracing, data = cacovid_mobility65)
 
-summary(google.category4)
-plot(google.category4, which = c(1,2))
-
 google.cooks1 <- cooks.distance(google.category4)
 which(google.cooks1 > 4/(n-p-1))
 influenceIndexPlot(google.category4, vars = "Cook")
+
+summary(google.category4)
+plot(google.category4, which = c(1,2))
+```
+
+Comparing the refit model with the fully transformed model, there is not difference
+between the two models.
+
+```{r}
+par(mfrow = c(1,2))
+plot(google.category3, which = c(1,2))
+plot(google.category4, which = c(1,2))
 ```
 
