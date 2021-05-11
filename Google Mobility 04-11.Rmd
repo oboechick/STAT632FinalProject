@@ -197,7 +197,6 @@ subset.summary
 subset.summary$adjr2
 subset.summary$cp
 subset.summary$bic
-
 ```
 
 After model selection for lowest cp and BIC, and highest adjusted R-squared
@@ -392,25 +391,24 @@ plot(google.workplace3, which = c(1,2))
 summary(regsubset.trans1)
 ```
 
-Is it okay to increase to 4?
+Checking for high leverage points
 ```{r}
 # leverage point calculations
 p <- 7
 n <- nrow(cacovid_mobility)
 cacovid_hat <- hatvalues(regsubset.trans1)
-
 which(cacovid_hat > 4*(p+1)/n)
 ```
 
-Choose between $|r_i|>3\;or\;2$ Setting it to 3 means there are no outliers
+Checking for outliers, set $|r_i|>2$ 
+Note: setting $|r_i|$ to 3 means there are no outliers
 ```{r}
 # outlier calculations
 cacovid_std <- rstandard(regsubset.trans1)
-which(abs(cacovid_std) > 3)
 which(abs(cacovid_std) > 2)
 ```
 
-
+Plot to look for bad leverage points
 ```{r}
 # plot of high leverage points and outliers
 plot(hatvalues(regsubset.trans1), rstandard(regsubset.trans1), xlab = "Leverage", 
@@ -492,10 +490,103 @@ anova(gm, bd)
 
 
 ```{r}
+google.workplace4 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
 # linear fit with full transformation and adding back in all categorical data
-google.workplace3 <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + I(residential_percent_change_from_baseline^-2) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy + fcontact_tracing, data = cacovid_mobility)
+google.workplace3 <- lm(sqrt(deaths) ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + I(parks_percent_change_from_baseline^1/3) + log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + I(residential_percent_change_from_baseline^-2) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
 summary(google.workplace3)
 plot(google.workplace3, which = c(1,2))
 ```
 
+
+~~~~~~~~~~~~~~ UPDATE MAY 10, 2021 ~~~~~~~~~~~~~~ 
+
+Linear fit with Google mobility and categorical base Covid data
+
+```{r}
+google.category <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+summary(google.category)
+plot(google.category, which = c(1,2))
+```
+
+Variable selection using regsubset(). 
+
+```{r}
+google.subset <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility))
+
+google.subset
+google.subset$adjr2
+google.subset$cp
+google.subset$bic
+```
+
+Six predictor model chosen
+
+```{r}
+google.category1 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + fschool_closing + fworkplace_closing +  ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+summary(google.category1)
+
+plot(google.category1, which = c(1,2))
+```
+
+retail_and_recreation_percent_change_from_baseline needs a transformation to the power of 3/2
+grocery_and_pharmacy_percent_change_from_baseline needs a transformation to the power of 3/4
+
+```{r}
+google.transform1 <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline, cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline) ~ 1)
+
+summary(google.transform1)
+```
+
+```{r}
+google.category2 <- lm(deaths ~ I(retail_and_recreation_percent_change_from_baseline^(3/2)) + I(grocery_and_pharmacy_percent_change_from_baseline^(3/4)) + fschool_closing + fworkplace_closing +  ftesting_policy + fcontact_tracing, data = cacovid_mobility)
+
+summary(google.category2)
+plot(google.category2, which = c(1,2))
+```
+
+```{r}
+bc.transform <- boxCox(google.category2)
+bc.transform$x[which.max(bc.transform$y)]
+```
+
+```{r}
+google.category3 <- lm(sqrt(deaths) ~ I(retail_and_recreation_percent_change_from_baseline^(3/2)) + I(grocery_and_pharmacy_percent_change_from_baseline^(3/4)) + fschool_closing + fworkplace_closing +  ftesting_policy + fcontact_tracing, data = cacovid_mobility)
+
+summary(google.category3)
+plot(google.category3, which = c(1,2))
+```
+
+```{r}
+# plot of high leverage points and outliers
+plot(hatvalues(google.category3), rstandard(google.category3), xlab = "Leverage", 
+     ylab = "Standardized Residuals", lwd = 0.8, cex = 0.8)
+abline(v = 4*(p+1)/n, col = "red", lty = 2)
+abline(h = c(-2,2), col = "blue", lty =2)
+```
+
+Checking for high leverage points and outliers
+```{r}
+# leverage point calculations
+p <- 7
+n <- nrow(cacovid_mobility)
+google.hat <- hatvalues(google.category3)
+which(google.hat > 4*(p+1)/n)
+```
+
+```{r}
+# outlier calculations
+google.std <- rstandard(google.category3)
+which(abs(google.std) > 3)
+```
+
+```{r}
+# Cook's points and hat values
+google.cooks <- cooks.distance(google.category3)
+which(google.cooks > 4/(n-p-1))
+influenceIndexPlot(google.category3, vars = "Cook")
+influenceIndexPlot(google.category3, vars = "hat")
+```
 
