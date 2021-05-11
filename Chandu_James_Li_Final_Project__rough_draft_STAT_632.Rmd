@@ -4,9 +4,11 @@ author: "Nic James, Sri Chandu, Thomas Li "
 date: "05/21/2020"
 output:
   pdf_document: default
-  word_document: default
 ---
-
+\centering
+\raggedright
+\newpage
+\tableofcontents
 \pagebreak
 
 ## Abstract (100 words) - Nic
@@ -27,77 +29,109 @@ There are 16 variables in the base data set that we will be using for our regres
 
 Our initial objective was to find out if running a linear regression of the Google Mobility data with the Covid-19 data had any significance in predicting the rate of deaths due to Covid-19. The Google mobility data recorded travel trends to categorized locations during the Covid-19 pandemic. This data is compared against a baseline reading; that is, the median value of each day of the week during a 5‑week period (Jan 3 – Feb 6, 2020).
 
-### Variables in the base data set
-
+**Variables in the original COVID-19 Data Hub data set:**  
 date, confirmed, tests, population, latitude, longitude, school_closing, workplace_closing, cancel_events, transport_closing, stay_home_restrictions, internal_movement_restrictions, international_movement_restrictions, information_campaigns, testing_policy, contact_tracing, stringency_index
 
-### Variables used on top of base data set
-
-**key_google_mobility** - Identifier used in Google Mobility Reports.
+**Variables used on top of base data set:**  
+**World Bank data set:** GDP per capita, GDP per capita growth, Poverty rate, Pollution in mcg  
+**Google Mobility data set:** retail_and_recreation_percent_change_from_baseline, grocery_and_pharmacy_percent_change_from_baseline, parks_percent_change_from_baseline, transit_stations_percent_change_from_baseline, workplaces_percent_change_from_baseline, residential_percent_change_from_baseline
 
 
 ## Questions of Interest
 
-### Using the base data set
+#### 1. 
+What model using the contact tracing is the best predictor of deaths? We plan to use *deaths* as the response and *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set as predictors to answer this question. 
 
-#### 1.
+#### 2. 
+How does the economic profile of the country affect the mortality rate from COVID over the year 2020? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP per capita*, *GDP per capita growth*, and *Poverty rate* from the World Bank data set to answer this question.
 
-What model using the policy measures is the best predictor of deaths / confirmed?
+#### 3. 
+What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP per capita*, *GDP per capita growth*, and *Pollution in mcg* from the World Bank data set to answer this question.
 
--   Response: deaths / confirmed
+#### 4. 
+Using the Google Mobility Data, are policy measures that are non-restrictive with movement significant in preventing spread of Covid-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
 
--   Predictors: Base data set
-
-#### 2.
-
-### Using the World Bank Data
-
-#### 1.
-
-How does the economic profile of the country affect the mortality rate from COVID over the year 2020?
-
--   Response: Number of deaths/Confirmed Cases
-
--   Predictors: GDP per capita, GDP per capita growth, Poverty rate, base data set
-
-#### 2.
-
-What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID?
-
--   Response: Number of cases and Number of deaths/Confirmed Cases
-
--   Predictors: Pollution in mcg, base data set
-
-### Using the Google Mobility Data
-
-#### 1.
-
-Are policy measures that are non-restrictive with movement significant in preventing spread of Covid-19?
-
--   Response: deaths
-
--   Predictors: any of the policy measures that don't specifically prevent people from freely moving/travelling (i.e. testing policy, info campaigns, contract tracing)
-
-#### 2.
-
-Are policy measures that are restrictive with movement more significant than non-restrictive measures in preventing the spread of Covid-19
-
--   Response: deaths
-
+#### 5. 
+Using the Google Mobility Data, are policy measures that are restrictive with movement more significant than non-restrictive measures in preventing the spread of COVID-19
+-   Response: deaths  
 -   Predictors: looking at both movement restrictive and non-restrictive and comparing their significance
 
 ## Regression Analysis, Results and Interpretation
 
 ### Important Details
 
-```{r echo=FALSE}
+```{r, verbose=FALSE, echo=FALSE}
 library(pacman)
-p_load(COVID19, car, tidyverse, ggplot2, dplyr, leaps, readr)
+p_load(COVID19, car, tidyverse, ggplot2, dplyr, leaps, readr, faraway)
 ```
 
-### Exploratory Analysis
+```{r, verbose=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+cacovid19data <- covid19("US", level = 2, verbose=FALSE) %>% 
+  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-14")
+
+base_data <- subset(cacovid19data, select = c("date", "confirmed", "deaths", "tests", 
+                                              "school_closing", "workplace_closing", 
+                                              "gatherings_restrictions", "stay_home_restrictions",
+                                              "internal_movement_restrictions", "information_campaigns",
+                                              "testing_policy", "contact_tracing", "stringency_index"))
+
+fschool_closing = as.factor(base_data$school_closing)
+fworkplace_closing <- as.factor(base_data$workplace_closing)
+fgatherings_restrictions <- as.factor(base_data$gatherings_restrictions)
+fstay_home_restrictions <- as.factor(base_data$stay_home_restrictions)
+finternal_movement_restrictions <- as.factor(base_data$internal_movement_restrictions)
+finformation_campaigns <- as.factor(base_data$information_campaigns)
+ftesting_policy <- as.factor(base_data$testing_policy)
+fcontact_tracing <- as.factor(base_data$contact_tracing)
+
+attach(base_data)
+
+fbase_data <- base_data %>% 
+  mutate(fschool_closing, fworkplace_closing, fgatherings_restrictions,
+         fstay_home_restrictions, finternal_movement_restrictions,
+         finformation_campaigns, ftesting_policy, fcontact_tracing)
+attach(fbase_data)
+```
+
+```{r, echo=FALSE}
+mod.0 <- lm(deaths ~ 1, data = fbase_data)
+mod.full <- lm(deaths ~ confirmed + tests + fschool_closing +
+                 fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
+                 ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+
+anova(mod.0, mod.full)
+```
+
+### Exploratory Analysis I:
+
+We started by creating a data frame by filtering the data first by United States of America, secondly by California, and finally by date. We ended with 365 rows of data for California. There is not any data for vaccines, recovered, hosp, vent, and icu so we removed these variables. We decided to use the following variables to create a new data frame date, *tests*, *confirmed*, *recovered*, *deaths*, *hosp*, *vent*, *icu*, *administrative_area_level_2*, *administrative_area_level_3*, *latitude*, *longitude*, *population*, *vaccines*, *school_closing*, *workplace_closing*, *cancel_events*, *gatherings_restrictions*, *transport_closing*, *stay_home_restrictions*, *internal_movement_restrictions*, *international_movement_restrictions*, *information_campaigns*, *testing_policy*, *contact_tracing*, and *stringency_index*. Since we don't have data for *vaccines*, *recovered*, *hosp*, *vent*, and *icu* we removed these variables. All variables now have data in every row. We then turned the policy measures (categorical variables) into factors before we fitted a regression model. However factors need to have 2 or more levels in order to work so we also removed *cancel_events*, *international_movement*, and *transport_closing*. We also removed *internal_movement_restrictions*, *information_campaigns*, *population*, *longitude*, and *latitude* as they have the same data for every row causing a singularity in the data. This left us with a base data set of *confirmed*,  *tests*, *fschool_closing*, *fworkplace_closing*, *fgatherings_restrictions*, *fstay_home_restrictions*, *ftesting_policy*, *fcontact_tracing*, and *stringency_index* as the predictors to start looking for a linear regression model with.
 
 
+
+We started by running a hypothesis test seeing if we would prefer the null model against the full model. From Table 1 in Appendix 1, we can see that the p-value is < 2.2e-16 so we reject the null model as at least one predictor in the full model is significant.
+
+We started by looking at the scatter plots for all of the variables. This was less useful since there were so many plots that it was difficult to see in detail (Plot 1, Appendix 1) so we looked at the scatter plots of the numerical data (Plot 2, Appendix 1) to see if there was anything that we could derive from the data. From this we can see that confirmed and tests both have a positive linear relationship with deaths. This would lead us to assume that confirmed and tests would be a positive influence on the number of deaths. The stringency index has a clear patterning to it that does not show any linear trends making it difficult to make any assumptions about it.
+
+We then did an analysis of the categorical data using box plots (Plot 3, Appendix 1). From these we concluded that none of these variables have a constant variance. We then looked at the added variable plots to see if we can see any variables that we should remove. 
+
+Since having 9 dummy variables creates a very complicated model we decided to only use 1 categorical variable in the final model, we kept contact tracing.
+
+
+
+
+### Diagnostic Checks I:
+
+### Exploratory Analysis II:
+
+Insert Google Mobility Analysis here
+
+### Diagnostic Checks II:
+
+Insert Google Mobility Diagnostics here
+
+### Exploratory Analysis III:
+
+Insert World Data Analysis here
 
 ### Interpretation
 
@@ -114,86 +148,103 @@ The young man wanted a role model. He looked long and hard in his youth, but tha
 
 ### Appendix 1: R Code
 
-#### Code Chunk 1:
+##### Table 1:
+$H_0:$ The null mo
 
-### Appendix 2 (optional): Exploratory analysis not used in final paper
+
+```{r, echo=FALSE}
+mod.0 <- lm(deaths ~ 1, data = fbase_data)
+mod.full <- lm(deaths ~ confirmed + tests + fschool_closing +
+                 fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
+                 ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
+
+anova(mod.0, mod.full)
+```
+
+
+##### Plot 1:
+Each of these are really small and it is hard to derive anything useful from them.
+
+```{r, fig.dim = c(6,4)}
+pairs(deaths ~ confirmed + tests + fschool_closing +
+                 fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
+                 finternal_movement_restrictions  +finformation_campaigns + ftesting_policy + 
+                 fcontact_tracing + stringency_index, data = fbase_data)
+```
+
+##### Plot 2:
+Scatterplots of the numerical variables in the original data set.
+
+```{r, fig.dim = c(3.5,2.5)}
+pairs(deaths ~ confirmed + tests +  stringency_index, data = fbase_data)
+```
+
+##### Plot 3: 
+Box plots of the categorical variables in the original data set.
+
+```{r, fig.dim = c(6,4)}
+par(mfrow=c(2,3))
+boxplot(deaths ~ fschool_closing, data = fbase_data, ylab = "Deaths", xlab = "School Closing")
+boxplot(deaths ~ fworkplace_closing, data = fbase_data, ylab = "Deaths", xlab = "Workplace Closing")
+boxplot(deaths ~  fgatherings_restrictions, data = fbase_data, ylab = "Deaths", xlab = "Restrictions on Gathering")
+boxplot(deaths ~  + fstay_home_restrictions, data = fbase_data, ylab = "Deaths", xlab = "Stay at Home Restrictions")
+boxplot(deaths ~  + ftesting_policy, data = fbase_data, ylab = "Deaths", xlab = "Testing Policies")
+boxplot(deaths ~  + fcontact_tracing, data = fbase_data, ylab = "Deaths", xlab = "Contact Tracing")
+```
+
+##### Plot 4:
+Added variable plots for both the categorical variables.
+
+```{r, warning=FALSE, fig.dim = c(10,4)}
+mod.full1 <- lm(deaths ~ fschool_closing +
+                 fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
+                 ftesting_policy + fcontact_tracing + confirmed + tests + stringency_index, data = fbase_data)
+
+avPlots(mod.full1)
+```
+
+
+
+### Appendix 2: Exploratory analysis not used in final paper
 
 #### Base Data:
-```{r}
-pairs(deaths ~ date + confirmed + tests + latitude  + longitude + population +  fschool_closing +
-            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  +
-            finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
-```
+
+
 
 #### Google Mobility Data
 
 
 
-### Appendix 3: World Bank Data Story
+#### World Bank Data Story
 
 
-### Appendix 4: Data Variable Description
+### Appendix 3: Data Variable Description
 
--   **date** - Observation date
+-   **date** - Observation date  
+-   **confirmed** - Cumulative number of confirmed cases  
+-   **tests** - Cumulative number of tests  
+-   **population** - Total population  
+-   **latitude** - Latitude (Check to see if more than 1 since we are only using CA)  
+-   **longitude** - Longitude (Check to see if more than 1 since we are only using CA)  
+-   **school_closing** - 0: No measures - 1: Recommend closing - 2: Require closing (only some levels or categories, eg just high school, or just public schools - 3: Require closing all levels  
+-   **workplace_closing** - 0: No measures - 1: Recommend closing (or work from home) - 2: require closing for some sectors or categories of workers - 3: require closing (or work from home) all-but-essential workplaces (eg grocery stores, doctors).  
+-   **cancel_events** - 0: No measures - 1: Recommend canceling - 2: Require canceling gatherings_restrictions 0: No restrictions - 1: Restrictions on very large gatherings (the limit is above 1000 people) - 2: Restrictions on gatherings between 100-1000 people - 3: Restrictions on gatherings between 10-100 people - 4: Restrictions on gatherings of less than 10 people.  
+-  **gatherings_restrictions** -	0: No restrictions - 1: Restrictions on very large gatherings (the limit is above 1000 people) - 2: Restrictions on gatherings between 100-1000 people - 3: Restrictions on gatherings between 10-100 people - 4: Restrictions on gatherings of less than 10 people.  
+-   **transport_closing** - 0: No measures - 1: Recommend closing (or significantly reduce volume/route/means of transport available) - 2: Require closing (or prohibit most citizens from using it).  
+-   **stay_home_restrictions** - 0: No measures - 1: recommend not leaving house - 2: require not leaving house with exceptions for daily exercise, grocery shopping, and "essential" trips - 3: Require not leaving house with minimal exceptions (e.g. allowed to leave only once every few days, or only one person can leave at a time, etc.).  
+-   **internal_movement_restrictions** - 0: No measures - 1: Recommend closing (or significantly reduce volume/route/means of transport) - 2: Require closing (or prohibit most people from using it).  
+-   **international_movement_restrictions** - 0: No measures - 1: Screening - 2: Quarantine arrivals from high-risk regions - 3: Ban on high-risk regions - 4: Total border closure.  
+-   **information_campaigns** - 0: No COVID-19 public information campaign - 1: public officials urging caution about COVID-19 - 2: coordinated public information campaign (e.g. across traditional and social media).  
+-   **testing_policy** - 0: No testing policy - 1: Only those who both (a) have symptoms AND (b) meet specific criteria (eg key workers, admitted to hospital, came into contact with a known case, returned from overseas) - 2: testing of anyone showing COVID-19 symptoms - 3: open public testing (eg "drive through" testing available to asymptomatic people).  
+-   **contact_tracing** - 0: No contact tracing - 1: Limited contact tracing, not done for all cases - 2: Comprehensive contact tracing, done for all cases.  
+-   **stringency_index** - Stringency of governmental responses.  
+-   **retail_and_recreation_percent_change_from_baseline** - comparison of pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations classified as retail and recreation  
+-   **grocery_and_pharmacy_percent_change_from_baseline** - comparison of pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations classified as grocery stores and pharmacies  
+-   **parks_percent_change_from_baseline** - comparison of pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations classified as outdoor parks  
+-   **transit_stations_percent_change_from_baseline** - comparison of pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations classified as transit stations  
+-   **workplaces_percent_change_from_baseline** - comparison of pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations classified as work places  
+-   **residential_percent_change_from_baseline** - comparison of pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations classified as residential  
 
--   **confirmed** - Cumulative number of confirmed cases
-
--   **tests** - Cumulative number of tests
-
--   **population** - Total population
-
--   **latitude** - Latitude (Check to see if more than 1 since we are only using CA)
-
--   **longitude** - Longitude (Check to see if more than 1 since we are only using CA)
-
--   **school_closing** - 0: No measures - 1: Recommend closing - 2: Require closing (only some levels or categories, eg just high school, or just public schools - 3: Require closing all levels
-
--   **workplace_closing** - 0: No measures - 1: Recommend closing (or work from home) - 2: require closing for some sectors or categories of workers - 3: require closing (or work from home) all-but-essential workplaces (eg grocery stores, doctors).
-
--   **cancel_events** - 0: No measures - 1: Recommend canceling - 2: Require canceling gatherings_restrictions 0: No restrictions - 1: Restrictions on very large gatherings (the limit is above 1000 people) - 2: Restrictions on gatherings between 100-1000 people - 3: Restrictions on gatherings between 10-100 people - 4: Restrictions on gatherings of less than 10 people.
-
--  **gatherings_restrictions** -	0: No restrictions - 1: Restrictions on very large gatherings (the limit is above 1000 people) - 2: Restrictions on gatherings between 100-1000 people - 3: Restrictions on gatherings between 10-100 people - 4: Restrictions on gatherings of less than 10 people.
-
--   **transport_closing** - 0: No measures - 1: Recommend closing (or significantly reduce volume/route/means of transport available) - 2: Require closing (or prohibit most citizens from using it).
-
--   **stay_home_restrictions** - 0: No measures - 1: recommend not leaving house - 2: require not leaving house with exceptions for daily exercise, grocery shopping, and "essential" trips - 3: Require not leaving house with minimal exceptions (e.g. allowed to leave only once every few days, or only one person can leave at a time, etc.).
-
--   **internal_movement_restrictions** - 0: No measures - 1: Recommend closing (or significantly reduce volume/route/means of transport) - 2: Require closing (or prohibit most people from using it).
-
--   **international_movement_restrictions** - 0: No measures - 1: Screening - 2: Quarantine arrivals from high-risk regions - 3: Ban on high-risk regions - 4: Total border closure.
-
--   **information_campaigns** - 0: No COVID-19 public information campaign - 1: public officials urging caution about COVID-19 - 2: coordinated public information campaign (e.g. across traditional and social media).
-
--   **testing_policy** - 0: No testing policy - 1: Only those who both (a) have symptoms AND (b) meet specific criteria (eg key workers, admitted to hospital, came into contact with a known case, returned from overseas) - 2: testing of anyone showing COVID-19 symptoms - 3: open public testing (eg "drive through" testing available to asymptomatic people).
-
--   **contact_tracing** - 0: No contact tracing - 1: Limited contact tracing, not done for all cases - 2: Comprehensive contact tracing, done for all cases.
-
--   **stringency_index** - Stringency of governmental responses.
-
-
--   **retail_and_recreation_percent_change_from_baseline** - comparison of 
-pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
-classified as retail and recreation
-
--   **grocery_and_pharmacy_percent_change_from_baseline** - comparison of 
-pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
-classified as grocery stores and pharmacies
-
--   **parks_percent_change_from_baseline** - comparison of 
-pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
-classified as outdoor parks
-
--   **transit_stations_percent_change_from_baseline** - comparison of 
-pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
-classified as transit stations
-
--   **workplaces_percent_change_from_baseline** - comparison of 
-pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
-classified as work places
-
--   **residential_percent_change_from_baseline* +** - comparison of 
-pre-Covid-19 pandemic to Covid-19 pandemic travel trends to destinations 
-classified as residential 
 
 **wb** - World Bank Data
 
