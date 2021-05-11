@@ -499,6 +499,9 @@ plot(google.workplace3, which = c(1,2))
 ```
 
 
+
+
+
 ~~~~~~~~~~~~~~ UPDATE MAY 10, 2021 ~~~~~~~~~~~~~~ 
 
 Linear fit with Google mobility and categorical base Covid data
@@ -625,4 +628,45 @@ par(mfrow = c(1,2))
 plot(google.category3, which = c(1,2))
 plot(google.category4, which = c(1,2))
 ```
+
+Final Model:
+
+Response: sqrt(deaths)
+
+Predictors: 
+retail_and_recreation_percent_change_from_baseline^(3/2)
+grocery_and_pharmacy_percent_change_from_baseline^(3/4)
+fschool_closing
+fworkplace_closing
+ftesting_policy
+fcontact_tracing
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
