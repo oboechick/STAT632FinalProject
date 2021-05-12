@@ -19,13 +19,7 @@ Are decreased trends in movement significant in preventing spread of Covid-19?
 
 ## Regression Analysis, Results and Interpretation
 
-### Exploratory Analysis
-
-#### Full Model (Base Covid + Google Mobility)
-
-We read in and subset the Google mobility data. The data only included reports in CA and ranged from Mar 13, 2020 to Mar 14, 2021. 
-We also took out 4 columns of data that were identifiers and not relevant for our data analysis. Lastly, we removed all rows with 
-at least one NA and converted all data from percentages to decimals.
+### Important Details
 
 ```{r message=FALSE, echo=FALSE}
 # US mobility report
@@ -39,7 +33,7 @@ ca_mobility20.21 <- region_mobility20.21 %>%
 
 # remove unique identifier columns
 ca_mobility.col <- ca_mobility20.21[,-c(5:8)]
-View(ca_mobility.col)
+
 # remove NA and convert to positive decimals
 ca_mobility.dat <- na.omit(ca_mobility.col) %>%
   mutate(retail_and_recreation_percent_change_from_baseline = retail_and_recreation_percent_change_from_baseline/100+0.9, grocery_and_pharmacy_percent_change_from_baseline = grocery_and_pharmacy_percent_change_from_baseline/100+0.9,
@@ -51,35 +45,280 @@ ca_mobility.dat <- na.omit(ca_mobility.col) %>%
            workplaces_percent_change_from_baseline/100+0.9,
          residential_percent_change_from_baseline = 
            residential_percent_change_from_baseline/100+0.9)
-head(ca_mobility.dat)
-```
 
-Merged base Covid data and Google mobility data to one dataframe.
-
-```{r echo=FALSE}
+# merge Google mobility with base Covid data
 cacovid_mobility <- merge(x = ca_mobility.dat, y = fbase_data, all = T)
 ```
 
-We ran an initial fitted linear model of Google mobility and 
-Covid 19 data. We removed all constant data as well as singularities. 
-Removed variables include:
-Longitude, Latitude, Population, finternal_movement_restrictions2, finformation_campaigns2
+```{r}
+# full fitted model w/ removed predictor variables
+google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+
+google.null <- lm(deaths ~ 1, data = cacovid_mobility)
+
+anova(google.null, google.full)
+```
+
+### Exploratory Analysis II
+
+#### Full Model (Base Covid + Google Mobility)
+
+After working solely with the base Covid data, we decided to add in the Google mobility data. First, we read in and subset the Google mobility data. The data only included reports in CA and ranged from Mar 13, 2020 to Mar 14, 2021. We also took out 4 columns of data that were identifiers and not relevant for our data analysis. Lastly, we removed all rows with at least one NA and converted all data from percentages to decimals. After changing the Google mobility data, we merged the modified base Covid data and Google mobility data into one dataframe. The Google mobility variables added as predictors are *retail_and_recreation_percent_change_from_baseline*, *grocery_and_pharmacy_percent_change_from_baseline*, *parks_percent_change_from_baseline*,  *transit_stations_percent_change_from_baseline*, *workplaces_percent_change_from_baseline*, and *residential_percent_change_from_baseline*. The modified base Covid data set included all variables with values in every row.
+
+We started off by running a linear model summary of the the full model (Table 1, Appendix 1, line ). We saw that the there were variables that were singularities (i.e. *longitude*, *latitude*, *population*, *finternal_movement_restrictions2*, and *finformation_campaigns2*) so we removed these from the model as well. Next, we ran an ANOVA comparing the modified full model with the null model (Table 2, Appendix 1, line ). The resulting p-value was <2.2e-16 so we reject the null model and conclude that there is at least one predictor variable in the full model that is significant. The next step we took was to check the QQ plot and residuals vs. fitted plot (Plot 1, Appendix 1, line ). Visually, we saw that it did not meet the assumptions of linearity. The QQ plot did not follow a linear trend and the residuals vs. fitted plot showed obvious patterning.
+
+Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors (Table 3, Appendix 1, line ). We compared all eight models by looking at adjusted R-squared, CP values, and Bic values (Table 4, Appendix 1, line ). The model we chose had seven predictor variables, but still did not show linearity (Plot 2, Appendix 1, line ). Thus, we decided to check if there were any necessary transformations for the predictors. 
+
+We ran transformations of all non-factor predictors. This resulted in a square root transformation for *confirmed* (Table 5, Appendix 1, line ). We also ran transformations for the response variable which resulted in a square root transformation for *deaths* (Plot 3, Appendix 1, line ).
+
+After transforming the model, we decided to check for outliers and high leverage points. Plotting the data showed that there were no bad leverage points(Plot 4, Appendix 1, line ). Also, we decided to check for high Cook's values. There were no values greater than 0.5 so we
+
+
+## Appendicies
+
+### Appendix 1: R Code
+
+##### Code 1: 
+
+```{r}
+# leverage point calculations
+p <- 7
+n <- nrow(cacovid_mobility)
+cacovid_hat <- hatvalues(regsubset.trans1)
+which(cacovid_hat > 4*(p+1)/n)
+
+# outlier calculations
+cacovid_std <- rstandard(regsubset.trans1)
+which(abs(cacovid_std) > 2)
+```
+
+##### Table 1:
+
+```{r}
+# full fitted model
+google.full1 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + latitude  + longitude + population +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+
+summary(google.full1)
+```
+
+
+##### Table 2:
+
+```{r}
+# full fitted model w/ removed predictor variables
+google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+
+google.null <- lm(deaths ~ 1, data = cacovid_mobility)
+
+anova(google.null, google.full)
+```
+
+
+##### Table 3:
+
+```{r}
+# best subset regression
+subset.summary <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility))
+
+subset.summary
+```
+
+##### Table 4:
+
+```{r}
+data.frame(subset.summary$adjr2,
+subset.summary$cp,
+subset.summary$bic)
+```
+
+##### Table 5:
+```{r}
+pt <- powerTransform(cbind(cacovid_mobility$tests) ~ 1)
+summary(pt)
+```
+
+##### Plot 1:
+
+```{r}
+# diagnostic plot for full model w/ removed singularities
+plot(google.full, which = c(1,2))
+```
+
+##### Plot 2:
+
+```{r}
+# diagnostic plots after model selection (7 predictors)
+regsubset.fit <- lm(deaths ~ date + tests + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+plot(regsubset.fit, which = c(1,2))
+```
+
+##### Plot 3:
+
+```{r}
+# optimal lambda for response from full model
+boxCox(regsubset.fit)
+```
+
+##### Plot 4:
+```{r echo=FALSE}
+# plot of high leverage points and outliers
+plot(hatvalues(regsubset.trans1), rstandard(regsubset.trans1), xlab = "Leverage", 
+     ylab = "Standardized Residuals", lwd = 0.1, cex = 0.8)
+abline(v = 4*(p+1)/n, col = "red", lty = 2)
+abline(h = c(-2,2), col = "blue", lty =2)
+```
+~~~~~ Code to add to final paper is above / Misc. code is below ~~~~~
 
 ```{r echo=FALSE}
 # full fitted model
 google.full1 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + latitude  + longitude + population +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
 
 # full fitted model w/ removed variables
-google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing +
-            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
 
 # summary of both fitted models
 summary(google.full1)
 summary(google.full)
 
-# diagnostic plot fo full model w/ removed variables
+# diagnostic plot for full model w/ removed singularities
 plot(google.full, which = c(1,2))
 ```
+
+We used regsubsets() for variable selection. We compared all eight models by looking at adjusted R-squared,
+CP values, and Bic values. The model chosen has seven predictor variables.
+
+```{r echo=FALSE}
+# best subset regression
+subset.summary <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing +
+            fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility))
+
+subset.summary
+
+data.frame(subset.summary$adjr2,
+subset.summary$cp,
+subset.summary$bic)
+
+
+# after model selection (7 predictors)
+regsubset.fit <- lm(deaths ~ date + tests + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+summary(regsubset.fit)
+```
+
+Running a residuals vs. fitted and Q-Q plot show that the initial model does not follow a normal distribution. 
+```{r echo=FALSE}
+# diagnostic plots for regsubset
+plot(regsubset.fit, which = c(1,2))
+```
+Transformation of all non-factor predictors. The confirmed 
+needs a square root transformation. 
+```{r echo=FALSE}
+pt <- powerTransform(cbind(cacovid_mobility$tests) ~ 1)
+summary(pt)
+```
+
+Square root transformation for the response 
+```{r echo=FALSE}
+# optimal lambda for response from full model
+boxCox(regsubset.fit)
+```
+
+```{r echo=FALSE}
+# square root transformation for both deaths and tests
+regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+```
+
+Checking for high leverage points
+```{r echo=FALSE}
+# leverage point calculations
+p <- 7
+n <- nrow(cacovid_mobility)
+cacovid_hat <- hatvalues(regsubset.trans1)
+which(cacovid_hat > 4*(p+1)/n)
+```
+
+Checking for outliers, set $|r_i|>2$ 
+Note: setting $|r_i|$ to 3 means there are no outliers
+```{r echo=FALSE}
+# outlier calculations
+cacovid_std <- rstandard(regsubset.trans1)
+which(abs(cacovid_std) > 2)
+```
+
+Plot to look for bad leverage points
+```{r echo=FALSE}
+# plot of high leverage points and outliers
+plot(hatvalues(regsubset.trans1), rstandard(regsubset.trans1), xlab = "Leverage", 
+     ylab = "Standardized Residuals", lwd = 0.1, cex = 0.8)
+abline(v = 4*(p+1)/n, col = "red", lty = 2)
+abline(h = c(-2,2), col = "blue", lty =2)
+```
+
+There are no Cook's points that are greater than 0.5. No points will be removed 
+```{r echo=FALSE}
+# Cook's points and hat values
+cacovid.cooks <- cooks.distance(regsubset.trans1)
+which(cacovid.cooks > 4/(n-p-1))
+influenceIndexPlot(regsubset.trans1, vars = "Cook")
+influenceIndexPlot(regsubset.trans1, vars = "hat")
+```
+
+Alternative: We remove data points with high Cook's values relative to other points.
+This does not affect the significance of the transformed model regsubset.trans1
+Ultimately, we will not remove high Cook's points.
+
+```{r echo=FALSE}
+cacovid_mobility1 <- cacovid_mobility[-c(12484:12596),]
+
+regsubset.cooks <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility1) 
+summary(regsubset.cooks)
+```
+
+Diagnostic plots after removing points based off of Cook's distance.
+
+```{r echo=FALSE}
+plot(regsubset.cooks, which = c(1,2))
+```
+
+```{r echo=FALSE}
+influenceIndexPlot(regsubset.cooks, vars = "Cook")
+```
+
+Proposed Model of variable selection with Google mobility and categorical data. 
+All Google mobility data was taken out.
+
+Response: square root of deaths
+
+Predictors:
+-square root of tests
+-fschool_closing
+-fworkplace_closing
+-fstay_home_restrictions
+-ftesting_policy
+-fcontact_tracing
+
+```{r}
+regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + 
+                         fworkplace_closing + fstay_home_restrictions + 
+                         ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+```
+
+
+## Google Mobility Write-up
+Our initial objective was to find out if running a linear regression of the 
+Google Mobility data with the Covid-19 data had any significance in predicting 
+the rate of deaths due to Covid-19. The Google mobility data recorded 
+travel trends to categorized locations during the Covid-19 pandemic. This data 
+is compared against a baseline reading; that is, the median value of each day of 
+the week during a 5‑week period (Jan 3 – Feb 6, 2020).
+
+In order to choose the ideal model, we fit the combined data and ran variable 
+selections to identify the model with the lowest cp and BIC values, and the
+highest adjusted R-squared value. The result of this selection process concluded
+that the travel trends of the Google mobility data are not significant in 
+predicting deaths due to Covid-19. That is, the final model selected only 
+includes data from the Covid-19 data set.
 
 
 We merged the Google mobility data with the Base Covid data
@@ -104,7 +343,7 @@ insight into the effects of the data on the spread of Covid-19.
 
 Running variable selection with AIC and BIC as the criteria.
 
-```{r}
+```{r echo=FALSE}
 # null model
 google.red <- lm(deaths ~ 1, data = cacovid_mobility)
 ```
@@ -124,7 +363,7 @@ AIC selected model:13 predictors
 -fcontact_tracing  
 -stringency_index
 
-```{r}
+```{r echo=FALSE}
 # variable selection with AIC
 step(google.full, scope = list(lower = google.red, upper = google.full), trace = 0)
 
@@ -162,7 +401,7 @@ BIC selected model:12 predictors
 -ftesting_policy 
 -fcontact_tracing
 
-```{r}
+```{r echo=FALSE}
 # variable selection with BIC
 n <- length(cacovid_mobility$deaths)
 step(google.full, scope = list(lower = google.red, upper = google.full), trace = 0, k = log(n))
@@ -189,7 +428,7 @@ plot(var_selectBIC, which = c(1,2))
 Ultimately we use regsubset to choose the best model. Here we visualize the 
 relationships between variables in the preferred model.
 
-```{r}
+```{r echo=FALSE}
 cacovid_pairs <- cacovid_mobility %>% 
   select(deaths, date, tests, fschool_closing, fworkplace_closing, 
     fstay_home_restrictions, ftesting_policy, fcontact_tracing) 
@@ -199,7 +438,7 @@ pairs(cacovid_pairs)
 After variable selection, we check for transformations. We visualize diagnostic
 plots for all suggested transformation combinations of predictors and response.
 
-```{r}
+```{r echo=FALSE}
 # square root transformation for both deaths and tests
 regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
 
@@ -229,7 +468,7 @@ fitted plot.
 We run variable selection and exclude only suggested variables that are categorical.
 The two models look similar.
 
-```{r}
+```{r echo=FALSE}
 # linear fit with Google mobility and only categorical variables from base Covid
 google.factors <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
 
