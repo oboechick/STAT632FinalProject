@@ -13,12 +13,11 @@ output:
 
 ## Abstract
 
-In this time of worldwide pandemic, it is often hard to know what policies should be in place to protect the general population. We looked at data collected for the COVID-19 pandemic combined with movement tracking collected by Google to see if we could determine which policy measure showed the most promise in effecting deaths from COVID-19 using multiple linear regression. We started by analyzing the data using only the COVID-19 data hub data set but could not find a linear regression that worked with that so we decided to use predictors solely from the Google Mobility data to see if we could see the best preventative measures for death from COVID-19.
+We looked at data collected for the COVID-19 pandemic combined with movement tracking collected by Google to see if we could determine which policy measure showed the most promise in effecting deaths from COVID-19 using multiple linear regression. We started by analyzing the data using only the COVID-19 data set but could not find a linear regression that worked. So we decided to use predictors solely from the Google Mobility data to see there were any linear correlations with death from COVID-19. We found that movement to residential, retail and recreational areas were correlated with an increase in deaths and that movement to grocery, pharmacy, parks, workplaces, and transit stations was correlated with a decrease in deaths.
 
 ## Problem and Motivation
 
-This past year our lives have changed drastically. We started school online instead of in person and have spent the majority of our year indoors, staying away from friends and family. We all know someone who has lost their lives to COVID-19 and we have experienced the effects of the virus daily. We wanted to use this data set because we were specifically interested in the Public Health measures like gathering restrictions, schools closing, workplace closing, and contact tracing during this pandemic. We wanted to see if we could find proof of how effective they were. We are hoping that by analyzing this data we will have a better understanding of which Public Health measures work the best. On a larger scale, analyses like this one will be extremely useful for future predictions and pandemics. Life styles and transportation have changed dramatically since the last world wide pandemic that was a hundred years ago. Having a recent event will help medical professionals to better understand the corona viruses and hopefully make it easier to deal with this situation in the future.
-
+This past year our lives have changed drastically. We started school online instead of in person and have spent the majority of our year indoors, staying away from friends and family. We all know someone who has lost their lives to COVID-19 and we have experienced the effects of the virus daily. We wanted to use this data set because we were specifically interested in the Public Health measures like gathering restrictions, schools closing, workplace closing, and contact tracing during this pandemic. We wanted to see if we could find proof of how effective they were. We are hoping that by analyzing this data we will have a better understanding of which Public Health measures work the best. On a larger scale, analyses like this one will be extremely useful for future predictions and pandemics. Life styles and transportation have changed dramatically since the last worldwide pandemic and that was a hundred years ago. Having a recent event will help medical professionals to better understand the spread of this disease and hopefully make quicker and more effective decisions if this situation were to occur again in the future.
 
 ## Data Description
 
@@ -93,22 +92,21 @@ ca_mobility.dat <- na.omit(ca_mobility.col) %>%
 
 # merge Google mobility with base COVID-19 data
 cacovid_mobility <- merge(x = ca_mobility.dat, y = fbase_data, all = T)
+
+# Data without outliers.
+cacovid_mobilityGO <- cacovid_mobility[-8847, -9918, ]
 ```
 
-We started by analyzing the base data set from COVID-19 data hub but discovered that it was not linear so we added on the Google Mobility data and re-ran our analysis. We started with a hypothesis test on the Google Mobility data to determine whether or not we had any significant variables in our full model to start. We used $H_0: \beta_1 = \beta_2 = ... = \beta_{16} = 0$ and $H_1:$ At least one $\beta_i \neq 0$ for $i = 1, 2, ... , 16$. From this we can see that our p-value is approximately 0 so we reject $H_0$ and assume that at least on of our predictors is significant.
-
-```{r, message=FALSE, echo=FALSE}
-# full fitted model w/ removed predictor variables
-google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
-
-google.null <- lm(deaths ~ 1, data = cacovid_mobility)
-
-anova(google.null, google.full)
+```{r, fig.dim = c(6,4), echo=FALSE}
+pairs(deaths ~ confirmed + tests + fschool_closing +
+                 fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
+                 finternal_movement_restrictions  +finformation_campaigns + ftesting_policy + 
+                 fcontact_tracing + stringency_index + retail_and_recreation_percent_change_from_baseline + 
+        grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + 
+        transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + 
+        residential_percent_change_from_baseline, data = cacovid_mobility)
 ```
 
-```{r, echo=FALSE}
-summary(google.full)
-```
 
 ## Questions of Interest
 
@@ -116,10 +114,11 @@ summary(google.full)
 What variables from the original data set have the most effect on deaths? We plan to use *deaths* as the response and *confirmed*, *tests*, *population*, *latitude*, *longitude*, *school_closing*, *workplace_closing*, *cancel_events*, *transport_closing*, *stay_home_restrictions*, *internal_movement_restrictions*, *international_movement_restrictions*, *information_campaigns*, *testing_policy*, *contact_tracing*, *stringency_index* from in the original COVID-19 data set as predictors to answer this question. 
 
 #### 2. 
-Are  the decreased trends in movement significant in preventing deaths caused by COVID-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
+Are the trends in movement significantly correlated to deaths caused by COVID-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this question.
 
 #### 3. 
 How does the economic profile of the country affect the mortality rate from COVID over the year 2020? What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP*, *GDP per capita growth*, *Hospital beds per 1000*, *Poverty headcount Ratio*, *CO2 emissions per capita*, *Percentage of population exposed to high air pollution level*,  *Annual percent Inflation*, *Total Reserves*, *Prevalence of Undernourishment*, and *Annual mean Air Pollution Exposure* from the World Bank data set to answer these questions.
+
 
 ## Regression Analysis, Results and Interpretation
 
@@ -618,6 +617,10 @@ summary(google.only3)
 ##### Table 5: 
 
 ```{r, echo=FALSE}
+google.only4 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobilityGO)
 summary(google.only4)
 ```
 
