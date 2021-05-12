@@ -65,13 +65,20 @@ anova(google.null, google.full)
 
 After working solely with the base Covid data, we decided to add in the Google mobility data. First, we read in and subset the Google mobility data. The data only included reports in CA and ranged from Mar 13, 2020 to Mar 14, 2021. We also took out 4 columns of data that were identifiers and not relevant for our data analysis. Lastly, we removed all rows with at least one NA and converted all data from percentages to decimals. After changing the Google mobility data, we merged the modified base Covid data and Google mobility data into one dataframe. The Google mobility variables added as predictors are *retail_and_recreation_percent_change_from_baseline*, *grocery_and_pharmacy_percent_change_from_baseline*, *parks_percent_change_from_baseline*,  *transit_stations_percent_change_from_baseline*, *workplaces_percent_change_from_baseline*, and *residential_percent_change_from_baseline*. The modified base Covid data set included all variables with values in every row.
 
-We started off by running a linear model summary of the the full model (Table 1, Appendix 1, line ). We saw that the there were variables that were singularities (i.e. *longitude*, *latitude*, *population*, *finternal_movement_restrictions2*, and *finformation_campaigns2*) so we removed these from the model as well. Next, we ran an ANOVA comparing the modified full model with the null model (Table 2, Appendix 1, line ). The resulting p-value was <2.2e-16 so we reject the null model and conclude that there is at least one predictor variable in the full model that is significant. The next step we took was to check the QQ plot and residuals vs. fitted plot (Plot 1, Appendix 1, line ). Visually, we saw that it did not meet the assumptions of linearity. The QQ plot did not follow a linear trend and the residuals vs. fitted plot showed obvious patterning.
+We started off by running a linear model summary of the the full model (Table 1, Appendix 1, line 102). We saw that the there were variables that were singularities (i.e. *longitude*, *latitude*, *population*, *finternal_movement_restrictions2*, and *finformation_campaigns2*) so we removed these from the model as well. Next, we ran an ANOVA comparing the modified full model with the null model (Table 2, Appendix 1, line 112). The resulting p-value was <2.2e-16 so we reject the null model and conclude that there is at least one predictor variable in the full model that is significant. The next step we took was to check the QQ plot and residuals vs. fitted plot (Plot 1, Appendix 1, line 148). Visually, we saw that it did not meet the assumptions of linearity. The QQ plot did not follow a linear trend and the residuals vs. fitted plot showed obvious patterning.
 
-Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors (Table 3, Appendix 1, line ). We compared all eight models by looking at adjusted R-squared, CP values, and Bic values (Table 4, Appendix 1, line ). The model we chose had seven predictor variables, but still did not show linearity (Plot 2, Appendix 1, line ). Thus, we decided to check if there were any necessary transformations for the predictors. 
+Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors (Table 3, Appendix 1, line 124). We compared all eight models by looking at adjusted R-squared, CP values, and Bic values (Table 4, Appendix 1, line 134). The model we chose had seven predictor variables, but still did not show linearity (Plot 2, Appendix 1, line 155). Thus, we decided to check if there were any necessary transformations for the predictors. 
 
-We ran transformations of all non-factor predictors. This resulted in a square root transformation for *confirmed* (Table 5, Appendix 1, line ). We also ran transformations for the response variable which resulted in a square root transformation for *deaths* (Plot 3, Appendix 1, line ).
+We ran transformations of all non-factor predictors. This resulted in a square root transformation for *confirmed* (Table 5, Appendix 1, line 142). We also ran transformations for the response variable which resulted in a square root transformation for *deaths* (Plot 3, Appendix 1, line 163).
 
-After transforming the model, we decided to check for outliers and high leverage points. Plotting the data showed that there were no bad leverage points(Plot 4, Appendix 1, line ). Also, we decided to check for high Cook's values. There were no values greater than 0.5 so we
+After transforming the model, we decided to check for outliers and high leverage points. We set $|r_i|>2$ to identify outliers. Plotting the data showed that there were no bad leverage points (Plot 4, Appendix 1, line 170). Also, we decided to check for high Cook's distance values of which none were greater than 0.5 (Plot 5, Appendix 1, line 179). As a result, we decided not to remove any data points.
+
+Our final model after variable selection and transformations does not include any Google mobility predictors. The response is $\sqrt{deaths}$ and the predictors are $\sqrt{tests}$, fschool_closing, fworkplace_closing, fstay_home_restrictions, ftesting_policy, and fcontact_tracing. Checking the final diagnostics plots, we see that the assumptions of linearity are not met (Plot 6, Appendix 1, line 188).
+
+For our next model, we decided to remove all base Covid numerical data from the original data set. The model included categorical base Covid data and Google mobility data.
+After exploring this model, we came to the same conclusion as the previous model, that assumptions of linearity were not met. Because of these results, we decided to remove all
+base Covid data and work solely with Google mobility data. 
+
 
 
 ## Appendicies
@@ -168,7 +175,48 @@ plot(hatvalues(regsubset.trans1), rstandard(regsubset.trans1), xlab = "Leverage"
 abline(v = 4*(p+1)/n, col = "red", lty = 2)
 abline(h = c(-2,2), col = "blue", lty =2)
 ```
-~~~~~ Code to add to final paper is above / Misc. code is below ~~~~~
+
+##### Plot 5:
+```{r}
+# Cook's distance
+cacovid.cooks <- cooks.distance(regsubset.trans1)
+which(cacovid.cooks > 4/(n-p-1))
+influenceIndexPlot(regsubset.trans1, vars = "Cook")
+
+```
+
+##### Plot 6:
+```{r}
+regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + 
+                         fworkplace_closing + fstay_home_restrictions + 
+                         ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+plot(regsubset.trans1, which = c(1,2))
+```
+
+
+
+
+
+
+
+##### place holder
+
+
+~~~~~ Code to add to final paper is ABOVE / Misc. code is BELOW ~~~~~
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```{r echo=FALSE}
 # full fitted model
@@ -302,6 +350,8 @@ Predictors:
 regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + 
                          fworkplace_closing + fstay_home_restrictions + 
                          ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+
+plot(regsubset.trans1, which = c(1,2))
 ```
 
 
