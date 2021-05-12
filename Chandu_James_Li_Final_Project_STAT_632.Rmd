@@ -104,6 +104,44 @@ mod.full <- lm(deaths ~ confirmed + tests + fschool_closing +
 anova(mod.0, mod.full)
 ```
 
+```{r message=FALSE, echo=FALSE}
+# US mobility report
+region_mobility21 <- read_csv("2021_US_Region_Mobility_Report.csv")
+region_mobility20 <- read_csv("2020_US_Region_Mobility_Report.csv")
+region_mobility20.21 <- merge(x = region_mobility20, y = region_mobility21, all = T)
+
+# subset dataframe range to CA only
+ca_mobility20.21 <- region_mobility20.21 %>% 
+  filter(sub_region_1 == "California", date >= "2020-03-15", date <= "2021-03-14")
+
+# remove unique identifier columns
+ca_mobility.col <- ca_mobility20.21[,-c(5:8)]
+
+# remove NA and convert to positive decimals
+ca_mobility.dat <- na.omit(ca_mobility.col) %>%
+  mutate(retail_and_recreation_percent_change_from_baseline = retail_and_recreation_percent_change_from_baseline/100+0.9, grocery_and_pharmacy_percent_change_from_baseline = grocery_and_pharmacy_percent_change_from_baseline/100+0.9,
+         parks_percent_change_from_baseline = 
+           parks_percent_change_from_baseline/100+0.9,
+         transit_stations_percent_change_from_baseline =
+           transit_stations_percent_change_from_baseline/100+0.9,
+         workplaces_percent_change_from_baseline = 
+           workplaces_percent_change_from_baseline/100+0.9,
+         residential_percent_change_from_baseline = 
+           residential_percent_change_from_baseline/100+0.9)
+
+# merge Google mobility with base COVID-19 data
+cacovid_mobility <- merge(x = ca_mobility.dat, y = fbase_data, all = T)
+```
+
+```{r}
+# full fitted model w/ removed predictor variables
+google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
+
+google.null <- lm(deaths ~ 1, data = cacovid_mobility)
+
+anova(google.null, google.full)
+```
+
 ### Exploratory Analysis I:
 
 We started by creating a data frame by filtering the data first by United States of America, secondly by California, and finally by date. We ended with 365 rows of data for California. There is not any data for vaccines, recovered, hosp, vent, and icu so we removed these variables. We decided to use the following variables to create a new data frame date, *tests*, *confirmed*, *recovered*, *deaths*, *hosp*, *vent*, *icu*, *latitude*, *longitude*, *population*, *vaccines*, *school_closing*, *workplace_closing*, *cancel_events*, *gatherings_restrictions*, *transport_closing*, *stay_home_restrictions*, *internal_movement_restrictions*, *international_movement_restrictions*, *information_campaigns*, *testing_policy*, *contact_tracing*, and *stringency_index*. Since we don't have data for *vaccines*, *recovered*, *hosp*, *vent*, and *icu* we removed these variables. All variables now have data in every row. We then turned the policy measures (categorical variables) into factors before we fitted a regression model. However factors need to have 2 or more levels in order to work so we also removed *cancel_events*, *international_movement*, and *transport_closing*. We also removed *internal_movement_restrictions*, *information_campaigns*, *population*, *longitude*, and *latitude* as they have the same data for every row causing a singularity in the data. This left us with a base data set of *confirmed*,  *tests*, *fschool_closing*, *fworkplace_closing*, *fgatherings_restrictions*, *fstay_home_restrictions*, *ftesting_policy*, *fcontact_tracing*, and *stringency_index* as the predictors to start looking for a linear regression model with.
@@ -120,20 +158,27 @@ $deaths = \beta_0 + \beta_1 fstay.home.restrictions + \beta_2 tests  + \beta_3 f
 
 We looked the residuals vs fitted and Q-Q plot (Plot 5, Appendix 1) to see if the linear assumptions were violated and to check to see if there were any outliers and/or leverage points. From the plots we can see that there is definite patterning in the residuals vs fitted plot and the Q-Q plot is heavy tailed showing violations of normality. We then run a powerTransform (Code 3, Appendix 1) on the numerical predictors and see that *tests* needs a cube root transformation and *stringency index* needs a logarithmic transformation. After we transform these predictors we checked to see if we needed to transform *deaths* and can see that the boxCox (Plot 6, Appendix 1) suggests a cube root transformation. 
 
-After transformation we looked at the residual vs fitted and Q-Q plot again to check for linearity.
+After transformation we looked at the residual vs fitted and Q-Q plot  again to check for linearity and check to see if there are still outliers. When we look we see that the residuals vs fitted plot is still very patterned and the Q-Q plot is still heavy-tailed but less so (Plot 7, Appendix 1). However we can still see that there is probably an outlier from the Cook's Distance plot (Plot 8, Appendix 1) so next we looked for outliers and leverage points (Code 4, Appendix 1). We removed the outliers and leverage points one at a time and stopped after removing rows 1, 2, 33, 34, and 35 (Code 5, Appendix 1). When we checked the diagnostics the Q-Q plot (Plot 9, Appendix 1) improved a little and the Cook's Distance plot again (Plot 10, Appendix 1) we were much happier with this result. 
 
-
-
+We checked the summary (Table 4, Appendix 1) again and saw that *fworkplace_gathering_restrictions* was no longer significant and so we removed it and checked the linear assumptions again (Plot 11, Appendix 1). There did not appear to be a difference between them. When we did a hypothesis test to see if we preferred the $H_0:$ mod.full6 or $H_1:$ mod.full5 (Code 6, Appendix 1), the p-value is 0.9087 showing us that we prefer the smaller model.
 
 ### Diagnostic Checks I:
 
-Here is our final diagnostic
+
 
 ### Interpretation I:
 
 ### Exploratory Analysis II:
 
-Insert Google Mobility Analysis here
+#### Full Model (Base Covid + Google Mobility)
+
+After working solely with the base COVID-19 data, we decided to add in the Google mobility data. First, we read in and subset the Google mobility data. The data only included reports in CA and ranged from Mar 13, 2020 to Mar 14, 2021. We also took out 4 columns of data that were identifiers and not relevant for our data analysis. Lastly, we removed all rows with at least one NA and converted all data from percentages to decimals. After changing the Google mobility data, we merged the modified base COVID-19 data and Google mobility data into one data frame. The Google mobility variables added as predictors are *retail_and_recreation_percent_change_from_baseline*, *grocery_and_pharmacy_percent_change_from_baseline*, *parks_percent_change_from_baseline*,  *transit_stations_percent_change_from_baseline*, *workplaces_percent_change_from_baseline*, and *residential_percent_change_from_baseline*. The modified base COVID-19 data set included all variables with values in every row.
+
+We started off by running a linear model summary of the the full model (Table A, Appendix 1). We saw that the there were variables that were singularities (i.e. *longitude*, *latitude*, *population*, *finternal_movement_restrictions2*, and *finformation_campaigns2*) so we removed these from the model as well. Next, we ran an ANOVA comparing the modified full model with the null model (Table B, Appendix 1). The resulting p-value was <2.2e-16 so we reject the null model and conclude that there is at least one predictor variable in the full model that is significant. The next step we took was to check the QQ plot and residuals vs. fitted plot (Plot A, Appendix 1). Visually, we saw that it did not meet the assumptions of linearity. The QQ plot did not follow a linear trend and the residuals vs. fitted plot showed obvious patterning.
+
+Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors (Table C, Appendix 1). We compared all eight models by looking at adjusted R-squared, CP values, and BIC values (Table D, Appendix 1). The model we chose had seven predictor variables, but still did not show linearity (Plot B, Appendix 1). Thus, we decided to check if there were any necessary transformations for the predictors. 
+
+We ran transformations of all non-factor predictors. This resulted in a square root transformation for *confirmed* (Table 5, Appendix A). We also ran transformations for the response variable which resulted in a square root transformation for *deaths* (Plot C, Appendix 1).
 
 ### Diagnostic Checks II:
 
@@ -189,6 +234,52 @@ pt <- powerTransform(cbind(tests, stringency_index) ~ 1, data = fbase_data)
 summary(pt)
 ```
 
+##### Code 4:
+There are two leverage points and 3 outliers.
+```{r}
+mod.full4 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
+    fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
+    data = fbase_data)
+# leverage point calculations
+p <- 10
+n <- nrow(fbase_data)
+mod.full4_hat <- hatvalues(mod.full4)
+
+leverage <- which(mod.full4_hat > 4*(p+1)/n)
+
+# Find outliers
+mod.full4_out <- rstandard(mod.full4)
+outliers<- which(abs(mod.full4_out) > 3)
+
+# Cook's points and hat values
+mod.full4.cooks <- cooks.distance(mod.full4)
+cooks <- which(mod.full4.cooks > 4/(n-p-1))
+
+leverage
+outliers
+cooks
+```
+
+
+##### Code 5:
+Remove all leverage and outliers from fbase_data.
+
+```{r}
+fbase_data1<-fbase_data[-c(1,2,33,34,35), ]
+```
+
+##### Code 6:
+
+```{r, echo=FALSE}
+mod.full6 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) +  
+    fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
+    data = fbase_data1)
+mod.full5 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
+    fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
+    data = fbase_data1)
+anova(mod.full6, mod.full5)
+```
+
 ##### Table 1:
 $H_0: \beta_1 = \beta_2 = ... = \beta_9 = 0$  
 $H_1:$ At least one $\beta_i \neq 0$ for $i = 1, 2, ... , 9$
@@ -214,6 +305,23 @@ This is a summary of the model found after BIC Stepwise Selection.
 ```{r}
 summary(step_bic)
 ```
+
+##### Table 4:
+
+```{r}
+summary(mod.full5)
+```
+
+##### Table 5:
+This is our final model.
+
+```{r}
+mod.full6 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) +  
+    fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
+    data = fbase_data1)
+summary(mod.full6)
+```
+
 
 ##### Plot 1:
 Each of these are really small and it is hard to derive anything useful from them.
@@ -281,7 +389,7 @@ opt.lambda
 ```
 
 ##### Plot 7: 
-Post transformation linearity check.
+Post transformation linearity check. The residuals vs fitted plot is still very patterned and the Q-Q plot is still heavy-tailed but less so.
 
 ```{r, fig.dim = c(6,4)}
 mod.full4 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
@@ -289,6 +397,60 @@ mod.full4 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) + fwor
     data = fbase_data)
 par(mfrow=c(2,2))
 plot(mod.full4)
+```
+
+##### Plot 8:
+From the Cook's InfuleceIndexPlot and hat-values influenceIndexPlot we can see that we should definitely look at points 1 and 2.
+
+```{r}
+# plot of high leverage points and outliers
+plot(hatvalues(mod.full4), rstandard(mod.full4), xlab = "Leverage", 
+     ylab = "Standardized Residuals")
+abline(v = 4*(p+1)/n, col = "red", lty = 2)
+abline(h = c(-3,3), col = "blue", lty =2)
+
+# Cook's points and hat values
+mod.full4.cooks <- cooks.distance(mod.full4)
+influenceIndexPlot(mod.full4, vars = "Cook")
+influenceIndexPlot(mod.full4, vars = "hat")
+```
+
+##### Plot 9:
+Checking the linearity after the removal of rows 1, 2, 33, 34, and 35. Looks a little better.
+
+```{r, fig.dim = c(6,4)}
+mod.full5 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
+    fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
+    data = fbase_data1)
+par(mfrow=c(2,2))
+plot(mod.full5)
+```
+
+##### Plot 10:
+Checking Cook's plot again after the removal of rows 1, 2, 33, 34, and 35. Looks better.
+
+```{r}
+# plot of high leverage points and outliers
+plot(hatvalues(mod.full5), rstandard(mod.full5), xlab = "Leverage", 
+     ylab = "Standardized Residuals")
+abline(v = 4*(p+1)/n, col = "red", lty = 2)
+abline(h = c(-3,3), col = "blue", lty =2)
+
+# Cook's points and hat values
+mod.full4.cooks <- cooks.distance(mod.full5)
+influenceIndexPlot(mod.full5, vars = "Cook")
+influenceIndexPlot(mod.full5, vars = "hat")
+```
+
+##### Plot 11:
+After removing the outliers work_place_restrictions is no longer significant so we removed it and the plots look roughly the same so we remove it from our model.
+
+```{r, fig.dim = c(6,4)}
+par(mfrow=c(2,2))
+mod.full6 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) +  
+    fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
+    data = fbase_data1)
+plot(mod.full6)
 ```
 
 
