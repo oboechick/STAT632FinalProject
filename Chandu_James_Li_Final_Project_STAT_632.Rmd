@@ -127,17 +127,22 @@ Since having 9 dummy variables creates a very complicated model we decided to on
 
 ### Diagnostic Checks I:
 
+### Interpretation I:
+
 ### Exploratory Analysis II:
 
 Insert Google Mobility Analysis here
 
 ### Diagnostic Checks II:
 
-Insert Google Mobility Diagnostics here
+Due to the base data not being linear we decided to add ...
+
+### Interpretation II:
+
 
 ### Exploratory Analysis III:
 
-Insert World Data Analysis here
+Due to the base data not being linear we decided to add but...
 
 ### Interpretation
 
@@ -153,6 +158,10 @@ The young man wanted a role model. He looked long and hard in his youth, but tha
 ## Appendicies
 
 ### Appendix 1: R Code
+
+#### Github Link:
+
+
 
 ##### Code 1:
 
