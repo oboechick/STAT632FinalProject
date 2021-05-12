@@ -11,49 +11,25 @@ output:
 \tableofcontents
 \pagebreak
 
-## Abstract (100 words) - Nic
+## Abstract
 
-The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
+In this time of worldwide pandemic, it is often hard to know what policies should be in place to protect the general population. We looked at data collected for the COVID-19 pandemic combined with movement tracking collected by Google to see if we could determine which policy measure showed the most promise in effecting deaths from COVID-19 using multiple linear regression. We started by analyzing the data using only the COVID-19 data hub data set but could not find a linear regression that worked with that so we decided to use predictors solely from the Google Mobility data to see if we could see the best preventative measures for death from COVID-19.
 
-## Problem and Motivation (200 words) - Sri
+## Problem and Motivation
 
-The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
+This past year our lives have changed drastically. We started school online instead of in person and have spent the majority of our year indoors, staying away from friends and family. We all know someone who has lost their lives to COVID-19 and we have experienced the effects of the virus daily. We wanted to use this data set because we were specifically interested in the Public Health measures like gathering restrictions, schools closing, workplace closing, and contact tracing during this pandemic. We wanted to see if we could find proof of how effective they were. We are hoping that by analyzing this data we will have a better understanding of which Public Health measures work the best. On a larger scale, analyses like this one will be extremely useful for future predictions and pandemics. Life styles and transportation have changed dramatically since the last world wide pandemic that was a hundred years ago. Having a recent event will help medical professionals to better understand the corona viruses and hopefully make it easier to deal with this situation in the future.
 
-The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
 
 ## Data Description
 
-This data set is a collection of governmental sources at national, regional, and city levels from 190 countries for COVID19. It includes time series of vaccines, test, cases, deaths, recovered, intensive therapy, and policy measures by Oxford COVID-19 Government Response Tracker. We will used the World Bank Google Mobility Reports as well.
-
-There are 16 variables in the base data set that we will be using for our regression. We will be limiting the location data strictly to California and using data from 3/15/2020 - 3/15/2021.
+This data set is a collection of governmental sources at national, regional, and city levels from 190 countries for COVID19. It includes time series of vaccines, test, cases, deaths, recovered, intensive therapy, and policy measures by Oxford COVID-19 Government Response Tracker. We will used the World Bank Google Mobility Reports as well. There are 16 variables in the base data set that we will be using for our regression. We will be limiting the location data strictly to California and using data from 3/15/2020 - 3/15/2021.
 
 Our initial objective was to find out if running a linear regression of the Google Mobility data with the Covid-19 data had any significance in predicting the rate of deaths due to Covid-19. The Google mobility data recorded travel trends to categorized locations during the Covid-19 pandemic. This data is compared against a baseline reading; that is, the median value of each day of the week during a 5‑week period (Jan 3 – Feb 6, 2020).
 
-**Variables in the original COVID-19 Data Hub data set:**  
-date, confirmed, tests, population, latitude, longitude, school_closing, workplace_closing, cancel_events, transport_closing, stay_home_restrictions, internal_movement_restrictions, international_movement_restrictions, information_campaigns, testing_policy, contact_tracing, stringency_index
-
-**Variables used on top of base data set:**  
+**Variables used:**  
+**Original COVID-19 data:** date, confirmed, tests, population, latitude, longitude, school_closing, workplace_closing, cancel_events, transport_closing, stay_home_restrictions, internal_movement_restrictions, international_movement_restrictions, information_campaigns, testing_policy, contact_tracing, stringency_index  
 **World Bank data set:** GDP per capita, GDP per capita growth, Poverty rate, Pollution in mcg  
 **Google Mobility data set:** retail_and_recreation_percent_change_from_baseline, grocery_and_pharmacy_percent_change_from_baseline, parks_percent_change_from_baseline, transit_stations_percent_change_from_baseline, workplaces_percent_change_from_baseline, residential_percent_change_from_baseline
-
-
-## Questions of Interest
-
-#### 1. 
-What model using the contact tracing is the best predictor of deaths? We plan to use *deaths* as the response and *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set as predictors to answer this question. 
-
-#### 2. 
-How does the economic profile of the country affect the mortality rate from COVID over the year 2020? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP per capita*, *GDP per capita growth*, and *Poverty rate* from the World Bank data set to answer this question.
-
-#### 3. 
-What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP per capita*, *GDP per capita growth*, and *Pollution in mcg* from the World Bank data set to answer this question.
-
-#### 4. 
-When adding in the Google Mobility tracking data to the base data, can we see what variables were the best predictors of death due to COVID-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
-
-## Regression Analysis, Results and Interpretation
-
-### Important Details
 
 ```{r, verbose=FALSE, echo=FALSE}
 library(pacman)
@@ -86,20 +62,11 @@ fbase_data <- base_data %>%
          fstay_home_restrictions, finternal_movement_restrictions,
          finformation_campaigns, ftesting_policy, fcontact_tracing)
 attach(fbase_data)
+
+fbase_data1<-fbase_data[-c(1,2,33,34,35), ]
+attach(fbase_data1)
 ```
-
-We did a hypothesis test to determine whether or not we had any significant variables in our full model to start. We used $H_0: \beta_1 = \beta_2 = ... = \beta_9 = 0$ and $H_1:$ At least one $\beta_i \neq 0$ for $i = 1, 2, ... , 9$.
-
-```{r, echo=FALSE}
-mod.0 <- lm(deaths ~ 1, data = fbase_data)
-mod.full <- lm(deaths ~ confirmed + tests + fschool_closing +
-                 fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
-                 ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
-
-anova(mod.0, mod.full)
-```
-
-```{r message=FALSE, echo=FALSE}
+```{r, verbose=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
 # US mobility report
 region_mobility21 <- read_csv("2021_US_Region_Mobility_Report.csv")
 region_mobility20 <- read_csv("2020_US_Region_Mobility_Report.csv")
@@ -128,6 +95,8 @@ ca_mobility.dat <- na.omit(ca_mobility.col) %>%
 cacovid_mobility <- merge(x = ca_mobility.dat, y = fbase_data, all = T)
 ```
 
+We started by analyzing the base data set from COVID-19 data hub but discovered that it was not linear so we added on the Google Mobility data and re-ran our analysis. We started with a hypothesis test on the Google Mobility data to determine whether or not we had any significant variables in our full model to start. We used $H_0: \beta_1 = \beta_2 = ... = \beta_{16} = 0$ and $H_1:$ At least one $\beta_i \neq 0$ for $i = 1, 2, ... , 16$. From this we can see that our p-value is approximately 0 so we reject $H_0$ and assume that at least on of our predictors is significant.
+
 ```{r, message=FALSE, echo=FALSE}
 # full fitted model w/ removed predictor variables
 google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
@@ -137,31 +106,47 @@ google.null <- lm(deaths ~ 1, data = cacovid_mobility)
 anova(google.null, google.full)
 ```
 
+```{r, echo=FALSE}
+summary(google.full)
+```
+
+## Questions of Interest
+
+#### 1. 
+What model using the contact tracing is the best predictor of deaths? We plan to use *deaths* as the response and *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set as predictors to answer this question. 
+
+#### 2. 
+How does the economic profile of the country affect the mortality rate from COVID over the year 2020? What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP*, *GDP per capita growth*, *Hospital beds per 1000*, *Poverty headcount Ratio*, *CO2 emissions per capita*, *Percentage of population exposed to high air pollution level*,  *Annual percent Inflation*, *Total Reserves*, *Prevalence of Undernourishment*, and *Annual mean Air Pollution Exposure* from the World Bank data set to answer these questions.
+
+#### 3. 
+Are decreased trends in movement significant in preventing deaths caused by COVID-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
+
+## Regression Analysis, Results and Interpretation
+
+### Important Details
+
+
+
+
 ### Exploratory Analysis I:
 
-We started by creating a data frame by filtering the data first by United States of America, secondly by California, and finally by date. We ended with 365 rows of data for California. There is not any data for vaccines, recovered, hosp, vent, and icu so we removed these variables. We decided to use the following variables to create a new data frame date, *tests*, *confirmed*, *recovered*, *deaths*, *hosp*, *vent*, *icu*, *latitude*, *longitude*, *population*, *vaccines*, *school_closing*, *workplace_closing*, *cancel_events*, *gatherings_restrictions*, *transport_closing*, *stay_home_restrictions*, *internal_movement_restrictions*, *international_movement_restrictions*, *information_campaigns*, *testing_policy*, *contact_tracing*, and *stringency_index*. Since we don't have data for *vaccines*, *recovered*, *hosp*, *vent*, and *icu* we removed these variables. All variables now have data in every row. We then turned the policy measures (categorical variables) into factors before we fitted a regression model. However factors need to have 2 or more levels in order to work so we also removed *cancel_events*, *international_movement*, and *transport_closing*. We also removed *internal_movement_restrictions*, *information_campaigns*, *population*, *longitude*, and *latitude* as they have the same data for every row causing a singularity in the data. This left us with a base data set of *confirmed*,  *tests*, *fschool_closing*, *fworkplace_closing*, *fgatherings_restrictions*, *fstay_home_restrictions*, *ftesting_policy*, *fcontact_tracing*, and *stringency_index* as the predictors to start looking for a linear regression model with.
+We started by creating a data frame by filtering the data first by United States of America, secondly by California, and finally by date. We ended with 365 rows of data for California. There is not any data for *vaccines*, *recovered*, *hosp*, *vent*, and *icu* so we removed these variables. We decided to use the following variables to create a new data frame date, *tests*, *confirmed*, *recovered*, *deaths*, *hosp*, *vent*, *icu*, *latitude*, *longitude*, *population*, *vaccines*, *school_closing*, *workplace_closing*, *cancel_events*, *gatherings_restrictions*, *transport_closing*, *stay_home_restrictions*, *internal_movement_restrictions*, *international_movement_restrictions*, *information_campaigns*, *testing_policy*, *contact_tracing*, and *stringency_index*. Since we don't have data for *vaccines*, *recovered*, *hosp*, *vent*, and *icu* we removed these variables. All variables now have data in every row. We then turned the policy measures (categorical variables) into factors before we fitted a regression model. However factors need to have 2 or more levels in order to work so we also removed *cancel_events*, *international_movement*, and *transport_closing*. We also removed *internal_movement_restrictions*, *information_campaigns*, *population*, *longitude*, and *latitude* as they have the same data for every row causing a singularity in the data. This left us with a base data set of *confirmed*,  *tests*, *fschool_closing*, *fworkplace_closing*, *fgatherings_restrictions*, *fstay_home_restrictions*, *ftesting_policy*, *fcontact_tracing*, and *stringency_index* as the predictors to start looking for a linear regression model with.
 
 We started by running a hypothesis test to see if we would prefer the null model against the full model. From Table 1 in Appendix 1, we can see that the p-value is < 2.2e-16 so we reject the null model as at least one predictor in the full model is significant.
 
-Next we looked at the scatter plots for all of the variables. This was less useful since there were so many plots that it was difficult to see in detail (Plot 1, Appendix 1) so we looked at the scatter plots of the numerical data (Plot 2, Appendix 1) to see if there was anything that we could derive from the data. From this we can see that confirmed and tests both have a positive linear relationship with deaths. This would lead us to assume that confirmed and tests would be a positive influence on the number of deaths. The stringency index has a clear patterning to it that does not show any linear trends making it difficult to make any assumptions about it. We also should note that none of the variables are spread out. The data creates a line with the data points we we will definitely need to transform this data to see if we can find a linear relationship. We then did an analysis of the categorical data using box plots (Plot 3, Appendix 1). From these we concluded that none of these variables have a constant variance and thus we will probably need to transform some if not all of the variables.
+Next we looked at the scatter plots for all of the variables. This was less useful since there were so many plots that it was difficult to see in detail (Plot 1, Appendix 1) so we looked at the scatter plots of the numerical data (Plot 2, Appendix 1) to see if there was anything that we could derive from the data. From this we can see that *confirmed* and *tests* both have a positive linear relationship with *death*s. This would lead us to assume that *confirmed* and *tests* would be a positive influence on the number of *deaths*. The *stringency index* has a clear patterning to it that does not show any linear trends making it difficult to make any assumptions about it. We also should note that none of the variables are spread out. The data creates a line with the data points we we will definitely need to transform this data to see if we can find a linear relationship. We then did an analysis of the categorical data using box plots (Plot 3, Appendix 1). From these we concluded that none of these variables have a constant variance and thus we will probably need to transform some if not all of the variables. We also looked at the added variable plots (Plot 4, Appendix 1) and summary to see if we should remove any variables. From the added variable plots we assumed that we will probably remove *testing policy*, *confirmed*, and *stringency index*. While *gathering restrictions 2* and *gathering restrictions 3* look like they should be removed, *gathering restrictions 4* looks to have some influence and therefore we chose to keep the *gathering restrictions*. However, the summary table shows us that *confirmed* and *gathering restrictions* will probably be removed. Which goes against what we previously thought when looking at only the scatter plots and the added variable plots. We will probably keep *testing policy* since only one of the dummy variables is not significant. 
 
-We also looked at the added variable plots (Plot 4, Appendix 1) and summary to see if we should remove any variables. From the added variable plots we assumed that we will probably remove testing policy, confirmed, and stringency index. While gathering restrictions 2 and 3 look like they should be removed, gathering restrictions 4 looks to have some influence and therefore we chose to keep the gathering restrictions. However, the summary table shows us that confirmed and gathering restrictions will probably be removed. We may keep testing policy since only one of the dummy variables is not significant. 
-
-Next we did a variable selection using, AIC and BIC stepwise selection (see Code 1-2, Appendix 1). We can see that the only variable that is not significant is a dummy variable and we cannot remove it without removing a significant variable so we leave it in and we are left with a model of 
+Next we did a variable selection using, AIC and BIC stepwise selection (see Code 1-2, Appendix 1). We can see that the only variable that is not significant is a dummy variable for *testing policy* and we cannot remove it without removing a significant variable, as predicted, so we leave it in and we are left with a model of 
 
 $deaths = \beta_0 + \beta_1 fstay.home.restrictions + \beta_2 tests  + \beta_3 fworkplace.closing  + \beta_4 fschool.closing  + \beta_5 fcontact.tracing  + \beta_6ftesting.policy  + \beta_7 stringency.index$
 
-We looked the residuals vs fitted and Q-Q plot (Plot 5, Appendix 1) to see if the linear assumptions were violated and to check to see if there were any outliers and/or leverage points. From the plots we can see that there is definite patterning in the residuals vs fitted plot and the Q-Q plot is heavy tailed showing violations of normality. We then run a powerTransform (Code 3, Appendix 1) on the numerical predictors and see that *tests* needs a cube root transformation and *stringency index* needs a logarithmic transformation. After we transform these predictors we checked to see if we needed to transform *deaths* and can see that the boxCox (Plot 6, Appendix 1) suggests a cube root transformation. 
+We looked the residuals vs fitted and Q-Q plot (Plot 5, Appendix 1) to see if the linear assumptions were violated and to check to see if there were any outliers and/or leverage points. From the plots we can see that there is definite patterning in the residuals vs fitted plot and the Q-Q plot is heavy tailed showing violations of normality. We then run a powerTransform (Code 3, Appendix 1) on the numerical predictors and see that *tests* needs a cube root transformation and *stringency index* needs a logarithmic transformation. After we transform these predictors we checked to see if we needed to transform *deaths* and can see that the boxCox (Plot 6, Appendix 1) suggests a cube root transformation. This left us with a model of $\sqrt[3]{deaths} = \beta_0 + \beta_1 fstay.home.restrictions + \beta_2 \sqrt[3]{tests}  + \beta_3 fworkplace.closing  + \beta_4 fschool.closing  + \beta_5 fcontact.tracing  + \beta_6ftesting.policy  + \beta_7 log(stringency.index)$
 
 After transformation we looked at the residual vs fitted and Q-Q plot  again to check for linearity and check to see if there are still outliers. When we look we see that the residuals vs fitted plot is still very patterned and the Q-Q plot is still heavy-tailed but less so (Plot 7, Appendix 1). However we can still see that there is probably an outlier from the Cook's Distance plot (Plot 8, Appendix 1) so next we looked for outliers and leverage points (Code 4, Appendix 1). We removed the outliers and leverage points one at a time and stopped after removing rows 1, 2, 33, 34, and 35 (Code 5, Appendix 1). When we checked the diagnostics the Q-Q plot (Plot 9, Appendix 1) improved a little and the Cook's Distance plot again (Plot 10, Appendix 1) we were much happier with this result. 
 
-We checked the summary (Table 4, Appendix 1) again and saw that *fworkplace_gathering_restrictions* was no longer significant and so we removed it and checked the linear assumptions again (Plot 11, Appendix 1). There did not appear to be a difference between them. When we did a hypothesis test to see if we preferred the $H_0:$ mod.full6 or $H_1:$ mod.full5 (Code 6, Appendix 1), the p-value is 0.9087 showing us that we prefer the smaller model.
-
 ### Diagnostic Checks I:
 
-
-
-### Interpretation I:
+After transformation and outlier/leverage points being removed we checked the summary (Table 4, Appendix 1) again and saw that *fworkplace_gathering_restrictions* was no longer significant and so we removed it and checked the linear assumptions again (Plot 11, Appendix 1). There did not appear to be a difference between them. When we did a hypothesis test to see if we preferred the $H_0:$ mod.full6 or $H_1:$ mod.full5 (Code 6, Appendix 1), the p-value is 0.9087 showing us that we prefer the smaller model. However, no matter what we did with the data, this is not a linear model since there is a clear pattern in the residuals vs fitted plot. While we could interpret this model, it will not actually mean what we want because it is not linear.
 
 ### Exploratory Analysis II:
 
@@ -169,17 +154,18 @@ We checked the summary (Table 4, Appendix 1) again and saw that *fworkplace_gath
 
 After working solely with the base Covid data, we decided to add in the Google mobility data. First, we read in and subset the Google mobility data. The data only included reports in CA and ranged from Mar 13, 2020 to Mar 14, 2021. We also took out 4 columns of data that were identifiers and not relevant for our data analysis. Lastly, we removed all rows with at least one NA and converted all data from percentages to decimals. After changing the Google mobility data, we merged the modified base Covid data and Google mobility data into one dataframe. The Google mobility variables added as predictors are *retail_and_recreation_percent_change_from_baseline*, *grocery_and_pharmacy_percent_change_from_baseline*, *parks_percent_change_from_baseline*,  *transit_stations_percent_change_from_baseline*, *workplaces_percent_change_from_baseline*, and *residential_percent_change_from_baseline*. The modified base Covid data set included all variables with values in every row.
 
-We started off by running a linear model summary of the the full model (Table 1, Appendix 2). We saw that the there were variables that were singularities (i.e. *longitude*, *latitude*, *population*, *finternal_movement_restrictions2*, and *finformation_campaigns2*) so we removed these from the model as well. Next, we ran an ANOVA comparing the modified full model with the null model (Table 2, Appendix 2). The resulting p-value was <2.2e-16 so we reject the null model and conclude that there is at least one predictor variable in the full model that is significant. The next step we took was to check the QQ plot and residuals vs. fitted plot (Plot 1, Appendix 2). Visually, we saw that it did not meet the assumptions of linearity. The QQ plot did not follow a linear trend and the residuals vs. fitted plot showed obvious patterning.
+We started off by running a linear model summary of the the full model (Table 1, Appendix 2a). We saw that the there were variables that were singularities (i.e. *longitude*, *latitude*, *population*, *finternal_movement_restrictions2*, and *finformation_campaigns2*) so we removed these from the model as well. Next, we ran an ANOVA comparing the modified full model with the null model (Table 2, Appendix 2a). The resulting p-value was <2.2e-16 so we reject the null model and conclude that there is at least one predictor variable in the full model that is significant. The next step we took was to check the QQ plot and residuals vs. fitted plot (Plot 1, Appendix 2a). Visually, we saw that it did not meet the assumptions of linearity. The QQ plot did not follow a linear trend and the residuals vs. fitted plot showed obvious patterning.
 
-Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors (Table 3, Appendix 2). We compared all eight models by looking at adjusted R-squared, CP values, and Bic values (Table 4, Appendix 2). The model we chose had seven predictor variables, but still did not show linearity (Plot 2, Appendix 2). Thus, we decided to check if there were any necessary transformations for the predictors. 
+Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors (Table 3, Appendix 2a). We compared all eight models by looking at adjusted R-squared, CP values, and Bic values (Table 4, Appendix 2a). The model we chose had seven predictor variables, but still did not show linearity (Plot 2, Appendix 2a). Thus, we decided to check if there were any necessary transformations for the predictors. 
 
-We ran transformations of all non-factor predictors. This resulted in a square root transformation for *confirmed* (Table 5, Appendix 2). We also ran transformations for the response variable which resulted in a square root transformation for *deaths* (Plot 3, Appendix 2).
+We ran transformations of all non-factor predictors. This resulted in a square root transformation for *confirmed* (Table 5, Appendix 2a). We also ran transformations for the response variable which resulted in a square root transformation for *deaths* (Plot 3, Appendix 2a).
 
-After transforming the model, we decided to check for outliers and high leverage points. We set $|r_i|>2$ to identify outliers. Plotting the data showed that there were no bad leverage points (Plot 4, Appendix 2). Also, we decided to check for high Cook's distance values of which none were greater than 0.5 (Plot 5, Appendix 2). As a result, we decided not to remove any data points.
+After transforming the model, we decided to check for outliers and high leverage points. We set $|r_i|>2$ to identify outliers. Plotting the data showed that there were no bad leverage points (Plot 4, Appendix 2a). Also, we decided to check for high Cook's distance values of which none were greater than 0.5 (Plot 5, Appendix 2a). As a result, we decided not to remove any data points.
 
-Our final model after variable selection and transformations does not include any Google mobility predictors. The response is $\sqrt{deaths}$ and the predictors are $\sqrt{tests}$, fschool_closing, fworkplace_closing, fstay_home_restrictions, ftesting_policy, and fcontact_tracing. Checking the final diagnostics plots, we see that the assumptions of linearity are not met (Plot 6, Appendix 2).
+Our final model after variable selection and transformations does not include any Google mobility predictors. The response is $\sqrt{deaths}$ and the predictors are $\sqrt{tests}$, fschool_closing, fworkplace_closing, fstay_home_restrictions, ftesting_policy, and fcontact_tracing. Checking the final diagnostics plots, we see that the assumptions of linearity are not met (Plot 6, Appendix 2a).
 
 For our next model, we decided to remove all base Covid numerical data from the original data set. The model included categorical base Covid data and Google mobility data. After exploring this model, we came to the same conclusion as the previous model, that assumptions of linearity were not met. Because of these results, we decided to remove all base Covid data and work solely with Google mobility data. 
+We looked at adding a categorical variable to our model however the linear assumptions kept getting worse so we chose to leave the categorical variables out of our model and changed our questions to match this.
 
 ### Diagnostic Checks II:
 
@@ -187,7 +173,7 @@ And this plot shows us that we have a linear model and all of the assumptions ar
 
 
 
-We looked at adding a categorical variable to our model however the linear assumptions kept getting worse so we chose to leave the categorical variables out of our model and changed our questions to match this.
+
 
 ### Interpretation II:
 
@@ -195,9 +181,7 @@ $Y_{ijk} = \beta_1 var1 + \beta_2 var2$
 
 ### Exploratory Analysis III:
 
-Due to the base data not being linear we decided to add but...
-
-### Interpretation
+For the World Bank Data set, we only had one annual data point for each country. This meant that we had the same data point for every day which caused a singularity when we tried to analyze the data and combine it with the original COVID data set. We also did not have state data which is what we wanted to analyze. At the end, we only had the country by country data and could only look at one day and found that most of the variables were consistently lacking significant amounts of data points, which led to serious issues with the reliability of the data. Eventually we decided to only focus on the base data set and combine it with the Google Mobility tracking data. 
 
 
 
@@ -217,28 +201,32 @@ The young man wanted a role model. He looked long and hard in his youth, but tha
 The AIC model kept fstay_home_restrictions, tests, fworkplace_closing, fschool_closing, fcontact_tracing, ftesting_policy, and stringency_index as the predictors in the ideal model.
     data
 
-```{r}
+```{r, echo=FALSE}
+mod.0 <- lm(deaths ~ 1, data = fbase_data)
+mod.full <- lm(deaths ~ confirmed + tests + fschool_closing +
+                 fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
+                 ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
 (step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
 ```
 
 ##### Code 2:
 The BIC is the same as the AIC, we chose to use BIC.
 
-```{r}
+```{r, echo=FALSE}
 (step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
 ```
 
 ##### Code 3:
 The powerTransformation suggests we use a cube root transformation on *tests* and a logarithmic transformation on stringency_index. 
 
-```{r}
+```{r, echo=FALSE}
 pt <- powerTransform(cbind(tests, stringency_index) ~ 1, data = fbase_data)
 summary(pt)
 ```
 
 ##### Code 4:
 There are two leverage points and 3 outliers.
-```{r}
+```{r, echo=FALSE}
 mod.full4 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
     fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
     data = fbase_data)
@@ -266,7 +254,7 @@ cooks
 ##### Code 5:
 Remove all leverage and outliers from fbase_data.
 
-```{r}
+```{r, echo=FALSE}
 fbase_data1<-fbase_data[-c(1,2,33,34,35), ]
 ```
 
@@ -287,37 +275,32 @@ $H_0: \beta_1 = \beta_2 = ... = \beta_9 = 0$
 $H_1:$ At least one $\beta_i \neq 0$ for $i = 1, 2, ... , 9$
 
 ```{r, echo=FALSE}
-mod.0 <- lm(deaths ~ 1, data = fbase_data)
-mod.full <- lm(deaths ~ confirmed + tests + fschool_closing +
-                 fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
-                 ftesting_policy + fcontact_tracing + stringency_index, data = fbase_data)
-
 anova(mod.0, mod.full)
 ```
 
 ##### Table 2:
 This summary table shows us that confirmed and gathering restrictions will probably be removed. We may keep testing policy since only one of the dummy variables is not significant.
 
-```{r}
+```{r, echo=FALSE}
 summary(mod.full)
 ```
 
 ##### Table 3:
 This is a summary of the model found after BIC Stepwise Selection. 
-```{r}
+```{r, echo=FALSE}
 summary(step_bic)
 ```
 
 ##### Table 4:
 
-```{r}
+```{r, echo=FALSE}
 summary(mod.full5)
 ```
 
 ##### Table 5:
 This is our final model.
 
-```{r}
+```{r, echo=FALSE}
 mod.full6 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) +  
     fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
     data = fbase_data1)
@@ -328,7 +311,7 @@ summary(mod.full6)
 ##### Plot 1:
 Each of these are really small and it is hard to derive anything useful from them.
 
-```{r, fig.dim = c(6,4)}
+```{r, fig.dim = c(6,4), echo=FALSE}
 pairs(deaths ~ confirmed + tests + fschool_closing +
                  fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
                  finternal_movement_restrictions  +finformation_campaigns + ftesting_policy + 
@@ -338,14 +321,14 @@ pairs(deaths ~ confirmed + tests + fschool_closing +
 ##### Plot 2:
 Scatterplots of the numerical variables in the original data set.
 
-```{r, fig.dim = c(3.5,2.5)}
+```{r, fig.dim = c(3.5,2.5), echo=FALSE}
 pairs(deaths ~ confirmed + tests +  stringency_index, data = fbase_data)
 ```
 
 ##### Plot 3: 
 Box plots of the categorical variables in the original data set.
 
-```{r, fig.dim = c(6,4)}
+```{r, fig.dim = c(6,4), echo=FALSE}
 par(mfrow=c(2,3))
 boxplot(deaths ~ fschool_closing, data = fbase_data, ylab = "Deaths", xlab = "School Closing")
 boxplot(deaths ~ fworkplace_closing, data = fbase_data, ylab = "Deaths", xlab = "Workplace Closing")
@@ -358,7 +341,7 @@ boxplot(deaths ~  + fcontact_tracing, data = fbase_data, ylab = "Deaths", xlab =
 ##### Plot 4:
 Added variable plots for both the categorical variables.
 
-```{r, warning=FALSE, fig.dim = c(10,4)}
+```{r, warning=FALSE, fig.dim = c(10,4), echo=FALSE}
 mod.full1 <- lm(deaths ~ fschool_closing +
                  fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
                  ftesting_policy + fcontact_tracing + confirmed + tests + stringency_index, data = fbase_data)
@@ -369,7 +352,7 @@ avPlots(mod.full1)
 ##### Plot 5:
 Checking normality prior to transformation
 
-```{r, fig.dim = c(6,4)}
+```{r, fig.dim = c(6,4), echo=FALSE}
 mod.full2 <- lm(deaths ~ fstay_home_restrictions + tests + fworkplace_closing + 
     fschool_closing + fcontact_tracing + ftesting_policy + stringency_index, 
     data = fbase_data)
@@ -380,7 +363,7 @@ plot(mod.full2)
 ##### Plot 6:
 According to boxCox we should do a cube root transformation on the response *deaths*.
 
-```{r}
+```{r, fig.dim=c(6,4),echo=FALSE}
 mod.full3 <- lm(deaths ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
     fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
     data = fbase_data)
@@ -393,7 +376,7 @@ opt.lambda
 ##### Plot 7: 
 Post transformation linearity check. The residuals vs fitted plot is still very patterned and the Q-Q plot is still heavy-tailed but less so.
 
-```{r, fig.dim = c(6,4)}
+```{r, fig.dim = c(6,4), echo=FALSE}
 mod.full4 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
     fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
     data = fbase_data)
@@ -404,8 +387,9 @@ plot(mod.full4)
 ##### Plot 8:
 From the Cook's InfuleceIndexPlot and hat-values influenceIndexPlot we can see that we should definitely look at points 1 and 2.
 
-```{r}
+```{r, echo=FALSE}
 # plot of high leverage points and outliers
+par(mfrow=c(2,2))
 plot(hatvalues(mod.full4), rstandard(mod.full4), xlab = "Leverage", 
      ylab = "Standardized Residuals")
 abline(v = 4*(p+1)/n, col = "red", lty = 2)
@@ -413,6 +397,7 @@ abline(h = c(-3,3), col = "blue", lty =2)
 
 # Cook's points and hat values
 mod.full4.cooks <- cooks.distance(mod.full4)
+par(mfrow=c(2,2))
 influenceIndexPlot(mod.full4, vars = "Cook")
 influenceIndexPlot(mod.full4, vars = "hat")
 ```
@@ -420,7 +405,7 @@ influenceIndexPlot(mod.full4, vars = "hat")
 ##### Plot 9:
 Checking the linearity after the removal of rows 1, 2, 33, 34, and 35. Looks a little better.
 
-```{r, fig.dim = c(6,4)}
+```{r, fig.dim = c(6,4), echo=FALSE}
 mod.full5 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
     fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
     data = fbase_data1)
@@ -431,15 +416,18 @@ plot(mod.full5)
 ##### Plot 10:
 Checking Cook's plot again after the removal of rows 1, 2, 33, 34, and 35. Looks better.
 
-```{r}
+```{r, echo=FALSE}
 # plot of high leverage points and outliers
+par(mfrow=c(2,2))
 plot(hatvalues(mod.full5), rstandard(mod.full5), xlab = "Leverage", 
      ylab = "Standardized Residuals")
 abline(v = 4*(p+1)/n, col = "red", lty = 2)
 abline(h = c(-3,3), col = "blue", lty =2)
-
+```
+```{r, echo=FALSE, fig.dim=c(4,5,3)}
 # Cook's points and hat values
 mod.full4.cooks <- cooks.distance(mod.full5)
+par(mfrow=c(2,2))
 influenceIndexPlot(mod.full5, vars = "Cook")
 influenceIndexPlot(mod.full5, vars = "hat")
 ```
@@ -447,7 +435,7 @@ influenceIndexPlot(mod.full5, vars = "hat")
 ##### Plot 11:
 After removing the outliers work_place_restrictions is no longer significant so we removed it and the plots look roughly the same so we remove it from our model.
 
-```{r, fig.dim = c(6,4)}
+```{r, fig.dim = c(6,4), echo=FALSE}
 par(mfrow=c(2,2))
 mod.full6 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) +  
     fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
@@ -455,11 +443,11 @@ mod.full6 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) +
 plot(mod.full6)
 ```
 
-### Appendix 2: R Code for Google Mobility
+### Appendix 2a: R Code for Google Mobility + Categorical Variables
 
 ##### Code 1: 
 
-```{r}
+```{r, echo=FALSE}
 regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + 
                          fworkplace_closing + fstay_home_restrictions + 
                          ftesting_policy +fcontact_tracing, data = cacovid_mobility)
@@ -467,16 +455,16 @@ regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing +
 p <- 7
 n <- nrow(cacovid_mobility)
 cacovid_hat <- hatvalues(regsubset.trans1)
-which(cacovid_hat > 4*(p+1)/n)
+whichlev <- which(cacovid_hat > 4*(p+1)/n)
 
 # outlier calculations
 cacovid_std <- rstandard(regsubset.trans1)
-which(abs(cacovid_std) > 2)
+whichhat <- which(abs(cacovid_std) > 2)
 ```
 
 ##### Table 1:
 
-```{r}
+```{r, echo=FALSE}
 # full fitted model
 google.full1 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests +  fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + finternal_movement_restrictions  + finformation_campaigns + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
 
@@ -486,7 +474,7 @@ summary(google.full1)
 
 ##### Table 2:
 
-```{r}
+```{r, echo=FALSE}
 # full fitted model w/ removed predictor variables
 google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
 
@@ -498,7 +486,7 @@ anova(google.null, google.full)
 
 ##### Table 3:
 
-```{r}
+```{r, echo=FALSE}
 # best subset regression
 subset.summary <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing +
             fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility))
@@ -508,43 +496,46 @@ subset.summary
 
 ##### Table 4:
 
-```{r}
+```{r, echo=FALSE}
 data.frame(subset.summary$adjr2,
 subset.summary$cp,
 subset.summary$bic)
 ```
 
 ##### Table 5:
-```{r}
+```{r, echo=FALSE}
 pt <- powerTransform(cbind(cacovid_mobility$tests) ~ 1)
 summary(pt)
 ```
 
 ##### Plot 1:
 
-```{r}
+```{r, fig.dim=c(6,4), echo=FALSE}
 # diagnostic plot for full model w/ removed singularities
+par(mfrow=c(2,2))
 plot(google.full, which = c(1,2))
 ```
 
 ##### Plot 2:
 
-```{r}
+```{r, fig.dim=c(6,4), echo=FALSE}
 # diagnostic plots after model selection (7 predictors)
 regsubset.fit <- lm(deaths ~ date + tests + fschool_closing + fworkplace_closing + fstay_home_restrictions + ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+par(mfrow=c(2,2))
 plot(regsubset.fit, which = c(1,2))
 ```
 
 ##### Plot 3:
 
-```{r}
+```{r, fig.dim=c(6,4),echo=FALSE}
 # optimal lambda for response from full model
 boxCox(regsubset.fit)
 ```
 
 ##### Plot 4:
-```{r echo=FALSE}
+```{r echo=FALSE, fig.dim=c(9,6)}
 # plot of high leverage points and outliers
+par(mfrow=c(2,2))
 plot(hatvalues(regsubset.trans1), rstandard(regsubset.trans1), xlab = "Leverage", 
      ylab = "Standardized Residuals", lwd = 0.1, cex = 0.8)
 abline(v = 4*(p+1)/n, col = "red", lty = 2)
@@ -552,22 +543,25 @@ abline(h = c(-2,2), col = "blue", lty =2)
 ```
 
 ##### Plot 5:
-```{r}
+```{r, fig.dim=c(6,4), echo=FALSE}
 # Cook's distance
 cacovid.cooks <- cooks.distance(regsubset.trans1)
-which(cacovid.cooks > 4/(n-p-1))
+whichcooks <- which(cacovid.cooks > 4/(n-p-1))
 influenceIndexPlot(regsubset.trans1, vars = "Cook")
 
 ```
 
 ##### Plot 6:
-```{r}
+```{r, fig.dim=c(6,4), echo=FALSE}
 regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + 
                          fworkplace_closing + fstay_home_restrictions + 
                          ftesting_policy +fcontact_tracing, data = cacovid_mobility)
-
+par(mfrow=c(2,2))
 plot(regsubset.trans1, which = c(1,2))
 ```
+
+### Appendix 2b: R Code for Google Mobility Only
+
 
 
 ### Appendix 3: R Code for World Bank
