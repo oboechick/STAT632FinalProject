@@ -128,7 +128,7 @@ ca_mobility.dat <- na.omit(ca_mobility.col) %>%
 cacovid_mobility <- merge(x = ca_mobility.dat, y = fbase_data, all = T)
 ```
 
-```{r}
+```{r, message=FALSE, echo=FALSE}
 # full fitted model w/ removed predictor variables
 google.full <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline + date + confirmed + tests + fschool_closing + fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + ftesting_policy + fcontact_tracing + stringency_index, data = cacovid_mobility)
 
@@ -208,6 +208,7 @@ The young man wanted a role model. He looked long and hard in his youth, but tha
 
 The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
 
+\pagebreak
 ## Appendicies
 
 ### Appendix 1: R Code for Original COVID-19 Data Set
@@ -605,20 +606,15 @@ fpollution<- as.integer(wbcovdata$pollution)
 cleandata <- na.omit(wbcovdata)
 cleandata
 ```
-
-
-
 Graphs to check for Normality and variance
 
-```{r}
-economic<- lm(deaths ~ confirmed + gdp + gdp_grow + poverty, data= cleandata) # Economic
-airqual<- lm(deaths ~ co2em + pollution, data= wbcovdata) #Air Quality
+```{r, eval=FALSE}
+economic<- lm(deaths ~ confirmed, gdp, gdp_grow, poverty, data= cleandata) # Economic
+airqual<- lm(deaths ~ co2em, pollution, data= wbcovdata) #Air Quality
 
 summary(economic)
 summary(airqual)
 ```
-
-
 
 
 ### Appendix 4: Exploratory analysis not used in final paper
