@@ -113,13 +113,13 @@ summary(google.full)
 ## Questions of Interest
 
 #### 1. 
-What model using the contact tracing is the best predictor of deaths? We plan to use *deaths* as the response and *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set as predictors to answer this question. 
+What variables from the original data set have the most effect on deaths? We plan to use *deaths* as the response and *confirmed*, *tests*, *population*, *latitude*, *longitude*, *school_closing*, *workplace_closing*, *cancel_events*, *transport_closing*, *stay_home_restrictions*, *internal_movement_restrictions*, *international_movement_restrictions*, *information_campaigns*, *testing_policy*, *contact_tracing*, *stringency_index* from in the original COVID-19 data set as predictors to answer this question. 
 
 #### 2. 
 How does the economic profile of the country affect the mortality rate from COVID over the year 2020? What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP*, *GDP per capita growth*, *Hospital beds per 1000*, *Poverty headcount Ratio*, *CO2 emissions per capita*, *Percentage of population exposed to high air pollution level*,  *Annual percent Inflation*, *Total Reserves*, *Prevalence of Undernourishment*, and *Annual mean Air Pollution Exposure* from the World Bank data set to answer these questions.
 
 #### 3. 
-Are decreased trends in movement significant in preventing deaths caused by COVID-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
+Are  the decreased trends in movement significant in preventing deaths caused by COVID-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
 
 ## Regression Analysis, Results and Interpretation
 
