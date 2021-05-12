@@ -93,6 +93,8 @@ fbase_data <- base_data %>%
 attach(fbase_data)
 ```
 
+We did a hypothesis test to determine whether or not we had any significant variables in our full model to start. We used $H_0: \beta_1 = \beta_2 = ... = \beta_9 = 0$ and $H_1:$ At least one $\beta_i \neq 0$ for $i = 1, 2, ... , 9$.
+
 ```{r, echo=FALSE}
 mod.0 <- lm(deaths ~ 1, data = fbase_data)
 mod.full <- lm(deaths ~ confirmed + tests + fschool_closing +
@@ -112,20 +114,20 @@ Next we looked at the scatter plots for all of the variables. This was less usef
 
 We also looked at the added variable plots (Plot 4, Appendix 1) and summary to see if we should remove any variables. From the added variable plots we assumed that we will probably remove testing policy, confirmed, and stringency index. While gathering restrictions 2 and 3 look like they should be removed, gathering restrictions 4 looks to have some influence and therefore we chose to keep the gathering restrictions. However, the summary table shows us that confirmed and gathering restrictions will probably be removed. We may keep testing policy since only one of the dummy variables is not significant. 
 
-Next we did a variable selection using, AIC and BIC stepwise
+Next we did a variable selection using, AIC and BIC stepwise selection (see Code 1-2, Appendix 1). We can see that the only variable that is not significant is a dummy variable and we cannot remove it without removing a significant variable so we leave it in and we are left with a model of 
 
-Finally we looked the residuals vs fitted and Q-Q plot to see if the linear assumptions were violated.
+$deaths = \beta_0 + \beta_1 fstay.home.restrictions + \beta_2 tests  + \beta_3 fworkplace.closing  + \beta_4 fschool.closing  + \beta_5 fcontact.tracing  + \beta_6ftesting.policy  + \beta_7 stringency.index$
 
+We looked the residuals vs fitted and Q-Q plot (Plot 5, Appendix 1) to see if the linear assumptions were violated and to check to see if there were any outliers and/or leverage points. From the plots we can see that there is definite patterning in the residuals vs fitted plot and the Q-Q plot is heavy tailed showing violations of normality. We then run a powerTransform (Code 3, Appendix 1) on the numerical predictors and see that *tests* needs a cube root transformation and *stringency index* needs a logarithmic transformation. After we transform these predictors we checked to see if we needed to transform *deaths* and can see that the boxCox (Plot 6, Appendix 1) suggests a cube root transformation. 
 
-
-
-
-Since having 9 dummy variables creates a very complicated model we decided to only use 1 categorical variable in the final model, we kept contact tracing.
+After transformation we looked at the residual vs fitted and Q-Q plot again to check for linearity.
 
 
 
 
 ### Diagnostic Checks I:
+
+Here is our final diagnostic
 
 ### Interpretation I:
 
@@ -135,10 +137,15 @@ Insert Google Mobility Analysis here
 
 ### Diagnostic Checks II:
 
-Due to the base data not being linear we decided to add ...
+And this plot shows us that we have a linear model and all of the assumptions are met as well as our data can.
+
+
+
+We looked at adding a categorical variable to our model however the linear assumptions kept getting worse so we chose to leave the categorical variables out of our model and changed our questions to match this.
 
 ### Interpretation II:
 
+$Y_{ijk} = \beta_1 var1 + \beta_2 var2$
 
 ### Exploratory Analysis III:
 
@@ -159,30 +166,32 @@ The young man wanted a role model. He looked long and hard in his youth, but tha
 
 ### Appendix 1: R Code
 
-#### Github Link:
-
-
-
 ##### Code 1:
+The AIC model kept fstay_home_restrictions, tests, fworkplace_closing, fschool_closing, fcontact_tracing, ftesting_policy, and stringency_index as the predictors in the ideal model.
+    data
 
 ```{r}
 (step_aic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
 ```
 
-
-The BIC is the same as the AIC, so we chose to use BIC.
+##### Code 2:
+The BIC is the same as the AIC, we chose to use BIC.
 
 ```{r}
 (step_bic <- step(mod.0, scope = list(lower = mod.0, upper = mod.full), trace = 0))
 ```
 
+##### Code 3:
+The powerTransformation suggests we use a cube root transformation on *tests* and a logarithmic transformation on stringency_index. 
 
-
-
+```{r}
+pt <- powerTransform(cbind(tests, stringency_index) ~ 1, data = fbase_data)
+summary(pt)
+```
 
 ##### Table 1:
-$H_0:$ The null mo
-
+$H_0: \beta_1 = \beta_2 = ... = \beta_9 = 0$  
+$H_1:$ At least one $\beta_i \neq 0$ for $i = 1, 2, ... , 9$
 
 ```{r, echo=FALSE}
 mod.0 <- lm(deaths ~ 1, data = fbase_data)
@@ -201,7 +210,7 @@ summary(mod.full)
 ```
 
 ##### Table 3:
-
+This is a summary of the model found after BIC Stepwise Selection. 
 ```{r}
 summary(step_bic)
 ```
@@ -247,19 +256,46 @@ mod.full1 <- lm(deaths ~ fschool_closing +
 avPlots(mod.full1)
 ```
 
+##### Plot 5:
+Checking normality prior to transformation
+
+```{r, fig.dim = c(6,4)}
+mod.full2 <- lm(deaths ~ fstay_home_restrictions + tests + fworkplace_closing + 
+    fschool_closing + fcontact_tracing + ftesting_policy + stringency_index, 
+    data = fbase_data)
+par(mfrow=c(2,2))
+plot(mod.full2)
+```
+
+##### Plot 6:
+According to boxCox we should do a cube root transformation on the response *deaths*.
+
+```{r}
+mod.full3 <- lm(deaths ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
+    fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
+    data = fbase_data)
+
+bcTrans <- boxCox(mod.full3)
+opt.lambda <- bcTrans$x[which.max(bcTrans$y)]
+opt.lambda
+```
+
+##### Plot 7: 
+Post transformation linearity check.
+
+```{r, fig.dim = c(6,4)}
+mod.full4 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) + fworkplace_closing + 
+    fschool_closing + fcontact_tracing + ftesting_policy + log(stringency_index), 
+    data = fbase_data)
+par(mfrow=c(2,2))
+plot(mod.full4)
+```
 
 
 ### Appendix 2: Exploratory analysis not used in final paper
 
-#### Base Data:
+#### Github Link:
 
-
-
-#### Google Mobility Data
-
-
-
-#### World Bank Data Story
 
 
 ### Appendix 3: Data Variable Description

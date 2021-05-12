@@ -227,7 +227,9 @@ pt <- powerTransform(cbind(confirmed, tests, stringency_index) ~ 1, data = fbase
 summary(pt)
 ```
 ```{r}
-boxCox(mod.full4)
+bcTrans <- boxCox(mod.full4)
+opt.lambda <- bcTrans$x[which.max(bcTrans$y)]
+
 ```
 
 ```{r}
