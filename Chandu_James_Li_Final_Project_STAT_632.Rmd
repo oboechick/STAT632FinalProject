@@ -49,12 +49,7 @@ How does the economic profile of the country affect the mortality rate from COVI
 What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP per capita*, *GDP per capita growth*, and *Pollution in mcg* from the World Bank data set to answer this question.
 
 #### 4. 
-Using the Google Mobility Data, are policy measures that are non-restrictive with movement significant in preventing spread of Covid-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
-
-#### 5. 
-Using the Google Mobility Data, are policy measures that are restrictive with movement more significant than non-restrictive measures in preventing the spread of COVID-19
--   Response: deaths  
--   Predictors: looking at both movement restrictive and non-restrictive and comparing their significance
+When adding in the Google Mobility tracking data to the base data, can we see what variables were the best predictors of death due to COVID-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
 
 ## Regression Analysis, Results and Interpretation
 
@@ -624,32 +619,13 @@ summary(airqual)
 ```
 
 
-```{r}
-wbdcovid19 <- covid19("US", level = 2, verbose=FALSE, wb = wb) %>% 
-  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-14")
 
-
-wb_small <- subset(wbdcovid19, select = c("date", "confirmed", "deaths", "gdp", "gdp_grow", 
-                                             "hosp_beds", "poverty", "co2em", "pollution"))
-```
-
-```{r}
-summary(wb_small)
-```
-
-```{r}
-n_distinct(wb_small$gdp)
-n_distinct(wb_small$gdp_grow)
-n_distinct(wb_small$hosp_beds)
-n_distinct(wb_small$poverty)
-n_distinct(wb_small$co2em)
-n_distinct(wb_small$pollution)
-```
 
 ### Appendix 4: Exploratory analysis not used in final paper
 
 #### Github Link:
 
+https://github.com/oboechick/STAT632FinalProject
 
 
 ### Appendix 5: Data Variable Description

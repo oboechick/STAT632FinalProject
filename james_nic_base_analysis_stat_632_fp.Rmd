@@ -639,9 +639,29 @@ plot(mod.full6)
 
 
 
+# World Bank data for Sri
+
+```{r}
+wbdcovid19 <- covid19("US", level = 2, verbose=FALSE, wb = wb) %>% 
+  filter(administrative_area_level_2 == "California", date >= "2020-03-15", date <= "2021-03-14")
 
 
+wb_small <- subset(wbdcovid19, select = c("date", "confirmed", "deaths", "gdp", "gdp_grow", 
+                                             "hosp_beds", "poverty", "co2em", "pollution"))
+```
 
+```{r}
+summary(wb_small)
+```
+
+```{r}
+n_distinct(wb_small$gdp)
+n_distinct(wb_small$gdp_grow)
+n_distinct(wb_small$hosp_beds)
+n_distinct(wb_small$poverty)
+n_distinct(wb_small$co2em)
+n_distinct(wb_small$pollution)
+```
 
 
 
