@@ -116,10 +116,10 @@ summary(google.full)
 What variables from the original data set have the most effect on deaths? We plan to use *deaths* as the response and *confirmed*, *tests*, *population*, *latitude*, *longitude*, *school_closing*, *workplace_closing*, *cancel_events*, *transport_closing*, *stay_home_restrictions*, *internal_movement_restrictions*, *international_movement_restrictions*, *information_campaigns*, *testing_policy*, *contact_tracing*, *stringency_index* from in the original COVID-19 data set as predictors to answer this question. 
 
 #### 2. 
-How does the economic profile of the country affect the mortality rate from COVID over the year 2020? What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP*, *GDP per capita growth*, *Hospital beds per 1000*, *Poverty headcount Ratio*, *CO2 emissions per capita*, *Percentage of population exposed to high air pollution level*,  *Annual percent Inflation*, *Total Reserves*, *Prevalence of Undernourishment*, and *Annual mean Air Pollution Exposure* from the World Bank data set to answer these questions.
+Are  the decreased trends in movement significant in preventing deaths caused by COVID-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
 
 #### 3. 
-Are  the decreased trends in movement significant in preventing deaths caused by COVID-19? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *retail and recreation percent change from baseline*, *grocery and pharmacy percent change from baseline*, *parks percent change from baseline*, *transit stations percent change from baseline*, *workplaces percent change from baseline*, *residential percent change from baseline* from the Google Mobility data set to answer this questions.
+How does the economic profile of the country affect the mortality rate from COVID over the year 2020? What is the effect of air pollution (or exposure to air pollution) to the number of cases and the mortality rate from COVID? We plan to use *deaths* as the response; *confirmed*, *tests*, *contact tracing*, and *stringency index* from in the original COVID-19 data set; and *GDP*, *GDP per capita growth*, *Hospital beds per 1000*, *Poverty headcount Ratio*, *CO2 emissions per capita*, *Percentage of population exposed to high air pollution level*,  *Annual percent Inflation*, *Total Reserves*, *Prevalence of Undernourishment*, and *Annual mean Air Pollution Exposure* from the World Bank data set to answer these questions.
 
 ## Regression Analysis, Results and Interpretation
 
@@ -144,13 +144,15 @@ We looked the residuals vs fitted and Q-Q plot (Plot 5, Appendix 1) to see if th
 
 After transformation we looked at the residual vs fitted and Q-Q plot  again to check for linearity and check to see if there are still outliers. When we look we see that the residuals vs fitted plot is still very patterned and the Q-Q plot is still heavy-tailed but less so (Plot 7, Appendix 1). However we can still see that there is probably an outlier from the Cook's Distance plot (Plot 8, Appendix 1) so next we looked for outliers and leverage points (Code 4, Appendix 1). We removed the outliers and leverage points one at a time and stopped after removing rows 1, 2, 33, 34, and 35 (Code 5, Appendix 1). When we checked the diagnostics the Q-Q plot (Plot 9, Appendix 1) improved a little and the Cook's Distance plot again (Plot 10, Appendix 1) we were much happier with this result. 
 
-### Diagnostic Checks I:
+### Diagnostic Checks and Interpretation I:
 
-After transformation and outlier/leverage points being removed we checked the summary (Table 4, Appendix 1) again and saw that *fworkplace_gathering_restrictions* was no longer significant and so we removed it and checked the linear assumptions again (Plot 11, Appendix 1). There did not appear to be a difference between them. When we did a hypothesis test to see if we preferred the $H_0:$ mod.full6 or $H_1:$ mod.full5 (Code 6, Appendix 1), the p-value is 0.9087 showing us that we prefer the smaller model. However, no matter what we did with the data, this is not a linear model since there is a clear pattern in the residuals vs fitted plot. While we could interpret this model, it will not actually mean what we want because it is not linear.
+After transformation and outlier/leverage points being removed we checked the summary (Table 4, Appendix 1) again and saw that *fworkplace_gathering_restrictions* was no longer significant and so we removed it and checked the linear assumptions again (Plot 11, Appendix 1). There did not appear to be a difference between them. When we did a hypothesis test to see if we preferred the $H_0:$ mod.full6 or $H_1:$ mod.full5 (Code 6, Appendix 1), the p-value is 0.9087 showing us that we prefer the smaller model. 
+
+Our assumption that confirmed would have a strong effect on deaths was not correct, however, no matter what we did with the data, it is not a linear model since there is a clear pattern in the residuals vs fitted plot. So while we could interpret this model, it will not actually mean what we want because it is not linear.
 
 ### Exploratory Analysis II:
 
-#### Full Model (Base Covid + Google Mobility)
+#### a) Full Model (Base Covid + Google Mobility)
 
 After working solely with the base Covid data, we decided to add in the Google mobility data. First, we read in and subset the Google mobility data. The data only included reports in CA and ranged from Mar 13, 2020 to Mar 14, 2021. We also took out 4 columns of data that were identifiers and not relevant for our data analysis. Lastly, we removed all rows with at least one NA and converted all data from percentages to decimals. After changing the Google mobility data, we merged the modified base Covid data and Google mobility data into one dataframe. The Google mobility variables added as predictors are *retail_and_recreation_percent_change_from_baseline*, *grocery_and_pharmacy_percent_change_from_baseline*, *parks_percent_change_from_baseline*,  *transit_stations_percent_change_from_baseline*, *workplaces_percent_change_from_baseline*, and *residential_percent_change_from_baseline*. The modified base Covid data set included all variables with values in every row.
 
@@ -164,8 +166,12 @@ After transforming the model, we decided to check for outliers and high leverage
 
 Our final model after variable selection and transformations does not include any Google mobility predictors. The response is $\sqrt{deaths}$ and the predictors are $\sqrt{tests}$, fschool_closing, fworkplace_closing, fstay_home_restrictions, ftesting_policy, and fcontact_tracing. Checking the final diagnostics plots, we see that the assumptions of linearity are not met (Plot 6, Appendix 2a).
 
-For our next model, we decided to remove all base Covid numerical data from the original data set. The model included categorical base Covid data and Google mobility data. After exploring this model, we came to the same conclusion as the previous model, that assumptions of linearity were not met. Because of these results, we decided to remove all base Covid data and work solely with Google mobility data. 
+For our next model, we decided to remove all base COVID-19 numerical data from the original data set. The model included categorical base COVID-19 data and Google mobility data. After exploring this model, we came to the same conclusion as the previous model, that assumptions of linearity were not met. Because of these results, we decided to remove all base COVID-19 data and work solely with Google mobility data. 
+
 We looked at adding a categorical variable to our model however the linear assumptions kept getting worse so we chose to leave the categorical variables out of our model and changed our questions to match this.
+
+#### b) Full Model (Google Mobility Numerical Variables only)
+
 
 ### Diagnostic Checks II:
 

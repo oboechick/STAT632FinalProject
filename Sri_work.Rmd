@@ -1,0 +1,263 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+~~~~~~~~~~~~ UPDATE MAY 12, 2021 ~~~~~~~~~~~~~~ 
+
+GOOGLE MOBILITY ONLY
+
+
+```{r}
+google.only <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility)
+
+summary(google.only)
+
+par(mfrow = c(1,2))
+plot(google.only, which = c(1,2))
+
+googleonly.subset <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility))
+
+googleonly.subset
+
+summary(googleonly.subset)
+
+
+googleonly.subset$cp
+which.min(googleonly.subset$cp)
+
+googleonly.subset$adjr2
+which.max(googleonly.subset$adjr2)
+
+
+google.only1 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + 
+    grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + 
+    transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + 
+    residential_percent_change_from_baseline, data = cacovid_mobility)
+
+summary(google.only1)
+
+
+googleonly.transform <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline,
+                                             cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline,
+                                             cacovid_mobility$parks_percent_change_from_baseline,
+                                             cacovid_mobility$transit_stations_percent_change_from_baseline,
+                                             cacovid_mobility$workplaces_percent_change_from_baseline,
+                                             cacovid_mobility$residential_percent_change_from_baseline) ~ 1)
+
+summary(googleonly.transform)
+
+plot(google.only, which = c(1,2))
+
+
+google.only2 <- lm(deaths ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+
+summary(google.only2)
+
+par(mfrow = c(1,2))
+plot(google.only2, which = c(1,2))
+```
+
+```
+Transforming predictors--> 
+retail: 1.5--> 2 or 1
+grocery: 0.5
+parks: log
+transit: log
+workplace: none
+residential: -2
+
+```{r}
+
+google.only2 <- lm(deaths ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+
+summary(google.only2)
+
+par(mfrow = c(1,2))
+plot(google.only2, which = c(1,2))
+
+
+bc.transform <- boxCox(google.only2)
+bc.transform$x[which.max(bc.transform$y)]
+
+google.only3 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+
+summary(google.only3)
+
+par(mfrow = c(1,2))
+qqPlot(google.only2, which = c(1,2))
+qqPlot(google.only3, whcih = c(1,2))
+
+#leverage points and outliers
+p<- 6
+n <- nrow(cacovid_mobility)
+
+plot(hatvalues(google.only3), rstandard(google.only3), xlab = "Leverage", 
+     ylab = "Standardized Residuals", lwd = 0.8, cex = 0.8, ylim = c(-5,5))
+abline(v = 4 * (p+1)/n, col = "red", lty = 2)
+abline(h = c(-3,3), col = "blue", lty =2)
+
+# leverage point calculations
+p <- 6
+n <- nrow(cacovid_mobility)
+google3.hat <- hatvalues(google.only3)
+which(google3.hat > 3*mean(google3.hat))
+
+# outlier calculations
+google3.std <- rstandard(google.only3)
+which(abs(google3.std) > 3)
+
+```
+ Cook's and hat values. 
+
+```{r}
+# Cook's points and hat values
+google.cooks <- cooks.distance(google.only3)
+which(google.cooks > 4/(n-p-1))
+influenceIndexPlot(google.only3, vars = "Cook")
+influenceIndexPlot(google.only3, vars = "hat")
+
+
+
+cacovid_mobilityGO <- cacovid_mobility[-8847, -9918, ]
+
+google.only4 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobilityGO)
+
+GO.cooks1 <- cooks.distance(google.only4)
+which(GO.cooks1 > 4/(n-p-1))
+influenceIndexPlot(google.only4, vars = "Cook")
+
+summary(google.only4)
+par(mfrow = c(1,2))
+plot(google.only4, which = c(1,2))
+
+
+par(mfrow = c(1,2))
+plot(google.only3, which = c(1,2))
+plot(google.only4, which = c(1,2))
+
+summary(google.only4)
+```
+
+
+--Sri Writeup GM Only--
+We did an analysis to see if we could find a linear regression of the Google 
+Mobility variables when deaths was a response since the model when combined 
+with the Covid-19 categorical variables removed all the Google Mobility variables. 
+So, in our analysis we started off by doing an inital summary, our inital plots also showed that Linearity assumptions were not satisfied. It also showed that Workplace change was not significant, but we kept this and found that once we completed the transformations and removed Influential points, the variable did become significant. (Table 1, Appendix 2B) (Plot1, Appendix 2B).
+
+Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors. We compared all models by looking at adjusted R-squared and CP values. (Table 2,Appendix 2B) The model we chose had all 6 predictor variables. Next, we decided to check if there were any necessary transformations for the predictors. We found that 5 out of 6 variables needed to be transformed.(Table 3, Appendix 2B).The assumptions were still not met (Plot 2, Appendix 2B). Then we needed to see if the Response variable needed to be transformed, and found that it required a square root transformation (Plot 3, Appendix 2B). When we checked linearity assumptions we found that the QQ plot was much better, even though the residualsvsFitted stayed approximately the same (Plot 4, Appendix 2B). We also found that once all  transformations were done then the workplace variable that was initally not significant, stayed significant. (Table 4, Appendix 2B). 
+
+Lastly, we looked at outliers and found that there were some points that needed to be removed (Plot 5, Appendix 2B. Once we removed these, we checked our linear assumptions (Plot 6, Appendix 2b). We also checked to make sure that the removal of the outliers and high leverage points made our model better, and they did! (Plot 7, Appendix 2b). 
+
+
+---Appendix 2B---
+##Table 1:   
+
+google.only <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility)
+summary(google.only)
+
+##Table 2: 
+googleonly.subset <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility))
+
+##Table 3:
+googleonly.transform <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline,
+                                             cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline,
+                                             cacovid_mobility$parks_percent_change_from_baseline,
+                                             cacovid_mobility$transit_stations_percent_change_from_baseline,
+                                             cacovid_mobility$workplaces_percent_change_from_baseline,
+                                             cacovid_mobility$residential_percent_change_from_baseline) ~ 1)
+
+summary(googleonly.transform)
+
+googleonly.subset
+
+##Table 4:
+
+google.only3 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+summary(google.only3)
+
+##Table 5: 
+summary(google.only4)
+
+
+##Plot 1: 
+
+par(mfrow = c(1,2))
+plot(google.only, which = c(1,2))
+
+##Plot 2:
+google.only2 <- lm(deaths ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+
+summary(google.only2)
+
+par(mfrow = c(1,2))
+plot(google.only2, which = c(1,2))
+
+
+##Plot 3: 
+bc.transform <- boxCox(google.only2)
+bc.transform$x[which.max(bc.transform$y)]
+
+#Plot 4:
+
+par(mfrow = c(1,2))
+qqPlot(google.only2, which = c(1,2))
+qqPlot(google.only3, which = c(1,2))
+
+
+#plot 5: 
+influenceIndexPlot(google.only3, vars = "Cook")
+influenceIndexPlot(google.only3, vars = "hat")
+
+##Plot 6:
+summary(google.only4)
+par(mfrow = c(1,2))
+plot(google.only4, which = c(1,2))
+
+##plot 7: 
+par(mfrow = c(1,2))
+plot(google.only3, which = c(1,2))
+plot(google.only4, which = c(1,2))
+
+## Google Mobility Write-up
+Our initial objective was to find out if running a linear regression of the 
+Google Mobility data with the Covid-19 data had any significance in predicting 
+the rate of deaths due to Covid-19. The Google mobility data recorded 
+travel trends to categorized locations during the Covid-19 pandemic. This data 
+is compared against a baseline reading; that is, the median value of each day of 
+the week during a 5‑week period (Jan 3 – Feb 6, 2020).
+
+In order to choose the ideal model, we fit the combined data and ran variable 
+selections to identify the model with the lowest cp and BIC values, and the
+highest adjusted R-squared value. The result of this selection process concluded
+that the travel trends of the Google mobility data are not significant in 
+predicting deaths due to Covid-19. That is, the final model selected only 
+includes data from the Covid-19 data set.
+
+
+We merged the Google mobility data with the Base Covid data
+
