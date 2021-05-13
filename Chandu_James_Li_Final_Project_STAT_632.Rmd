@@ -193,6 +193,13 @@ Lastly, we looked at outliers and found that there were some points that needed 
 
 And this plot shows us that we have a linear model and all of the assumptions are met as well as our data can.
 
+```{r, fig.dim = c(6,4), echo=FALSE}
+par(mfrow = c(2,2))
+
+plot(google.category4, which = c(1,2))
+plot(google.only4, which = c(1,2))
+
+```
 
 
 
