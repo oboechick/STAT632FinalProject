@@ -176,17 +176,12 @@ For our next model, we decided to remove all base COVID-19 numerical data from t
 
 We looked at adding a categorical variable to our model however the linear assumptions kept getting worse so we chose to leave the categorical variables out of our model and changed our questions to match this.
 
-
 #### b) Full Model (Google Mobility Numerical Variables only)
 
-We did an analysis to see if we could find a linear regression of the Google 
-Mobility variables when deaths was a response since the model when combined 
-with the Covid-19 categorical variables removed all the Google Mobility variables. 
-So, in our analysis we started off by doing an inital summary, our inital plots also showed that Linearity assumptions were not satisfied. It also showed that Workplace change was not significant, but we kept this and found that once we completed the transformations and removed Influential points, the variable did become significant. (Table 1, Appendix 2B) (Plot1, Appendix 2B).
+In our last analysis, we wanted to see if we could find a linear regression of the Google Mobility variables when deaths as a response. So, we started off by doing an initial summary, and our initial plots also showed that Linearity assumptions were not satisfied. It also showed that Workplace change was not significant, which was interesting since we assumed that most workplaces were closed. 
 
-Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors. We compared all models by looking at adjusted R-squared and CP values. (Table 2,Appendix 2B) The model we chose had all 6 predictor variables. Next, we decided to check if there were any necessary transformations for the predictors. We found that 5 out of 6 variables needed to be transformed.(Table 3, Appendix 2B).The assumptions were still not met (Plot 2, Appendix 2B). Then we needed to see if the Response variable needed to be transformed, and found that it required a square root transformation (Plot 3, Appendix 2B). When we checked linearity assumptions we found that the QQ plot was much better, even though the residualsvsFitted stayed approximately the same (Plot 4, Appendix 2B). We also found that once all  transformations were done then the workplace variable that was initally not significant, stayed significant. (Table 4, Appendix 2B). 
+Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors. We compared all models by looking at adjusted R-squared and CP values. (Table 2, Appendix 2B) The model we chose had all 6 predictor variables. Next, we decided to check if there were any necessary transformations for the predictors. We found that 5 out of 6 variables needed to be transformed.(Table 3, Appendix 2B).The assumptions were still not met (Plot 2, Appendix 2B). Then we needed to see if the Response variable needed to be transformed, and found that it required a square root transformation (Plot 3, Appendix 2B), which was also what the previous model with the Google Mobility and Covid-base data found (Plot 6, Appendix 2A).
 
-Lastly, we looked at outliers and found that there were some points that needed to be removed (Plot 5, Appendix 2B. Once we removed these, we checked our linear assumptions (Plot 6, Appendix 2b). We also checked to make sure that the removal of the outliers and high leverage points made our model better, and they did! (Plot 7, Appendix 2b). 
 
 
 ### Diagnostic Checks II:
@@ -194,9 +189,17 @@ Lastly, we looked at outliers and found that there were some points that needed 
 And this plot shows us that we have a linear model and all of the assumptions are met as well as our data can.
 
 ```{r, fig.dim = c(6,4), echo=FALSE}
+regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + 
+                         fworkplace_closing + fstay_home_restrictions + 
+                         ftesting_policy +fcontact_tracing, data = cacovid_mobility)
+google.only4 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobilityGO)
+
 par(mfrow = c(2,2))
 
-plot(google.category4, which = c(1,2))
+plot(regsubset.trans1, which = c(1,2))
 plot(google.only4, which = c(1,2))
 
 ```
