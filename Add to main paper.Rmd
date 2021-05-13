@@ -370,7 +370,6 @@ that the travel trends of the Google mobility data are not significant in
 predicting deaths due to Covid-19. That is, the final model selected only 
 includes data from the Covid-19 data set.
 
-
 We merged the Google mobility data with the Base Covid data
 
 #### Google Mobility

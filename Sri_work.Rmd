@@ -42,7 +42,9 @@ google.only1 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline +
 
 summary(google.only1)
 
+```
 
+```{r}
 googleonly.transform <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline,
                                              cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline,
                                              cacovid_mobility$parks_percent_change_from_baseline,
@@ -54,11 +56,20 @@ summary(googleonly.transform)
 
 plot(google.only, which = c(1,2))
 
+```
 
-google.only2 <- lm(deaths ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
-    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+Transforming predictors--> 
+retail: 1.5--> 3/2
+grocery: 0.5
+parks: 1/3
+transit: log
+workplace: none
+residential: -2
+```{r}
+google.only2 <- lm (deaths ~ I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^(1/3)) + 
     log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
-    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+    I(residential_percent_change_from_baseline^(-2)), data = cacovid_mobility)
 
 summary(google.only2)
 
@@ -66,21 +77,14 @@ par(mfrow = c(1,2))
 plot(google.only2, which = c(1,2))
 ```
 
-```
-Transforming predictors--> 
-retail: 1.5--> 2 or 1
-grocery: 0.5
-parks: log
-transit: log
-workplace: none
-residential: -2
+
 
 ```{r}
 
-google.only2 <- lm(deaths ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
-    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+google.only2 <- lm(deaths ~ (I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^(1/3)) + 
     log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
-    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+    I(residential_percent_change_from_baseline^(-2))), data = cacovid_mobility)
 
 summary(google.only2)
 
@@ -91,10 +95,10 @@ plot(google.only2, which = c(1,2))
 bc.transform <- boxCox(google.only2)
 bc.transform$x[which.max(bc.transform$y)]
 
-google.only3 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
-    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+google.only3 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^(1/3)) + 
     log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
-    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+    I(residential_percent_change_from_baseline^(-2))), data = cacovid_mobility)
 
 summary(google.only3)
 
@@ -135,10 +139,10 @@ influenceIndexPlot(google.only3, vars = "hat")
 
 cacovid_mobilityGO <- cacovid_mobility[-8847, -9918, ]
 
-google.only4 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
-    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+google.only4 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^(1/3)) + 
     log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
-    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobilityGO)
+    I(residential_percent_change_from_baseline^(-2)), data = cacovid_mobilityGO))
 
 GO.cooks1 <- cooks.distance(google.only4)
 which(GO.cooks1 > 4/(n-p-1))
@@ -158,6 +162,8 @@ summary(google.only4)
 
 
 --Sri Writeup GM Only--
+
+
 We did an analysis to see if we could find a linear regression of the Google 
 Mobility variables when deaths was a response since the model when combined 
 with the Covid-19 categorical variables removed all the Google Mobility variables. 
