@@ -642,8 +642,155 @@ ftesting_policy
 fcontact_tracing
 
 
+~~~~~~~~~~~~ UPDATE MAY 12, 2021 ~~~~~~~~~~~~~~ 
+
+GOOGLE MOBILITY ONLY
 
 
+```{r}
+google.only <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility)
+
+summary(google.only)
+
+par(mfrow = c(1,2))
+plot(google.only, which = c(1,2))
+
+googleonly.subset <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility))
+
+googleonly.subset
+
+summary(googleonly.subset)
+
+
+googleonly.subset$cp
+which.min(googleonly.subset$cp)
+
+googleonly.subset$adjr2
+which.max(googleonly.subset$adjr2)
+
+
+google.only1 <- lm(deaths ~ retail_and_recreation_percent_change_from_baseline + 
+    grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + 
+    transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + 
+    residential_percent_change_from_baseline, data = cacovid_mobility)
+
+summary(google.only1)
+
+
+googleonly.transform <- powerTransform(cbind(cacovid_mobility$retail_and_recreation_percent_change_from_baseline,
+                                             cacovid_mobility$grocery_and_pharmacy_percent_change_from_baseline,
+                                             cacovid_mobility$parks_percent_change_from_baseline,
+                                             cacovid_mobility$transit_stations_percent_change_from_baseline,
+                                             cacovid_mobility$workplaces_percent_change_from_baseline,
+                                             cacovid_mobility$residential_percent_change_from_baseline) ~ 1)
+
+summary(googleonly.transform)
+
+plot(google.only, which = c(1,2))
+
+
+google.only2 <- lm(deaths ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+
+summary(google.only2)
+
+par(mfrow = c(1,2))
+plot(google.only2, which = c(1,2))
+```
+
+```
+Transforming predictors--> 
+retail: 1.5--> 2 or 1
+grocery: 0.5
+parks: log
+transit: log
+workplace: none
+residential: -2
+```
+```{r}
+google.only2 <- lm(deaths ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+
+summary(google.only2)
+
+par(mfrow = c(1,2))
+plot(google.only2, which = c(1,2))
+
+
+bc.transform <- boxCox(google.only2)
+bc.transform$x[which.max(bc.transform$y)]
+
+google.only3 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+
+summary(google.only3)
+
+par(mfrow = c(1,2))
+qqPlot(google.only2, which = c(1,2))
+qqPlot(google.only3, whcih = c(1,2))
+
+#leverage points and outliers
+p<- 6
+n <- nrow(cacovid_mobility)
+
+plot(hatvalues(google.only3), rstandard(google.only3), xlab = "Leverage", 
+     ylab = "Standardized Residuals", lwd = 0.8, cex = 0.8, ylim = c(-5,5))
+abline(v = 4 * (p+1)/n, col = "red", lty = 2)
+abline(h = c(-3,3), col = "blue", lty =2)
+
+# leverage point calculations
+p <- 6
+n <- nrow(cacovid_mobility)
+google3.hat <- hatvalues(google.only3)
+which(google3.hat > 3*mean(google3.hat))
+
+# outlier calculations
+google3.std <- rstandard(google.only3)
+which(abs(google3.std) > 3)
+```
+
+
+
+ Cook's and hat values. 
+
+```{r}
+# Cook's points and hat values
+google.cooks <- cooks.distance(google.only3)
+which(google.cooks > 4/(n-p-1))
+influenceIndexPlot(google.only3, vars = "Cook")
+influenceIndexPlot(google.only3, vars = "hat")
+
+
+
+cacovid_mobilityGO <- cacovid_mobility[-8847, -9918, ]
+
+google.only4 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+    log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
+    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobilityGO)
+
+GO.cooks1 <- cooks.distance(google.only4)
+which(GO.cooks1 > 4/(n-p-1))
+influenceIndexPlot(google.only4, vars = "Cook")
+
+summary(google.only4)
+par(mfrow = c(1,2))
+plot(google.only4, which = c(1,2))
+
+
+par(mfrow = c(1,2))
+plot(google.only3, which = c(1,2))
+plot(google.only4, which = c(1,2))
+
+summary(google.only4)
+
+```
 
 
 
