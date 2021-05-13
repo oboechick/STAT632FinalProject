@@ -133,7 +133,9 @@ In our last analysis, we wanted to see if we could find a linear regression of t
 Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors. We compared all models by looking at adjusted R-squared and CP values. (Table 2, Appendix 2B) The model we chose had all 6 predictor variables. Next, we decided to check if there were any necessary transformations for the predictors. We found that 5 out of 6 variables needed to be transformed.(Table 3, Appendix 2B).The assumptions were still not met (Plot 2, Appendix 2B). Then we needed to see if the Response variable needed to be transformed, and found that it required a square root transformation (Plot 3, Appendix 2B).
 Prior to transformation, when we did model selection using reg.susbset, we found that the CP and BIC indicated the 5 predictor model was better, but when we looked at the difference in Adjusted R^2 between the 6 vs. 5 predictor model, we found that they were very similar, at 34.328642 vs. 34.328653. 
 
-```{r, echo= FALSE}
+```{r, echo=FALSE}
+googleonly.subset <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility))
+
 googleonly.subset$cp
 which.min(googleonly.subset$cp)
 
@@ -612,6 +614,12 @@ summary(google.only)
 
 ```{r, echo=FALSE}
 googleonly.subset <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility))
+
+googleonly.subset$cp
+which.min(googleonly.subset$cp)
+
+googleonly.subset$adjr2
+which.max(googleonly.subset$adjr2)
 ```
 
 ##### Table 3:
