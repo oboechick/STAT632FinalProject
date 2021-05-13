@@ -1,0 +1,42 @@
+---
+title: "WorldBank"
+author: "Sri Chandu"
+date: "5/12/2021"
+output: pdf_document
+---
+```{r}
+library(pacman)
+p_load(COVID19, car, tidyverse, ggplot2, dplyr, leaps, readr)
+
+x <- covid19()
+covid19<- covid19(level = 1, start = "2020-03-15", end = "2021-03-15",)
+wb <- c("gdp" = "NY.GDP.MKTP.CD", "hosp_beds" = "SH.MED.BEDS.ZS", "gdp_grow" = "NY.GDP.MKTP.KD.ZG", "inflation" = "FP.CPI.TOTL.ZG", "tot_reserves" = "FI.RES.TOTL.CD", "poverty" = "SI.POV.DDAY", "food_insec" = "SN.ITK.DEFC.ZS", "co2em" = "EN.ATM.CO2E.PC", "pollution" = "EN.ATM.PM25.MC.ZS", "annual_poll" = "EN.ATM.PM25.MC.M3")
+wbdcovid1 <- covid19(wb = wb)
+
+wbcovdata1<- subset(wbdcovid1, select = c("date", "deaths", "iso_alpha_3", "administrative_area_level_1", "gdp", "gdp_grow", "hosp_beds", "poverty", "co2em", "pollution", "inflation","tot_reserves", "food_insec", "annual_poll"))
+
+
+igpd<- as.numeric(wbcovdata1$gdp)
+igdp_grow<- as.numeric(wbcovdata1$gdp_grow)
+ihosp_beds<- as.numeric(wbcovdata1$hosp_beds)
+ipoverty<- as.numeric(wbcovdata1$poverty)
+ico2em<- as.numeric(wbcovdata1$co2em)
+ipollution<- as.numeric(wbcovdata1$pollution)
+
+cleandata <- na.omit(wbcovdata1)
+finaldata<- (filter(cleandata, date >= "2021-03-14", date <= "2021-03-14"))
+
+finaldata
+
+
+economic<- lm(deaths ~ gdp + gdp_grow + poverty + hosp_beds + tot_reserves + food_insec, data= finaldata) # Economic
+airqual<- lm(deaths ~ co2em + pollution + annual_poll, data= finaldata) #Air Quality
+
+summary(economic)
+summary(airqual)
+
+plot(economic, which = c(1,2))
+plot(airqual, which = c(1,2))
+```
+
+
