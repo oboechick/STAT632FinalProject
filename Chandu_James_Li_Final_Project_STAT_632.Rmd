@@ -1,7 +1,7 @@
 ---
-title: "Final Project 632 Rough Draft"
+title: "Correlations to COVID-19 Deaths in California"
 author: "Nic James, Sri Chandu, Thomas Li "
-date: "05/21/2020"
+date: "05/12/2020"
 output:
   pdf_document: default
 ---
@@ -23,9 +23,9 @@ This past year our lives have changed drastically. We started school online inst
 
 This data set is a collection of governmental sources at national, regional, and city levels from 190 countries for COVID19. It includes time series of vaccines, test, cases, deaths, recovered, intensive therapy, and policy measures by Oxford COVID-19 Government Response Tracker. We will used the World Bank Google Mobility Reports as well. There are 16 variables in the base data set that we will be using for our regression. We will be limiting the location data strictly to California and using data from 3/15/2020 - 3/15/2021.
 
-Our initial objective was to find out if running a linear regression of the Google Mobility data with the Covid-19 data had any significance in predicting the rate of deaths due to Covid-19. The Google mobility data recorded travel trends to categorized locations during the Covid-19 pandemic. This data is compared against a baseline reading; that is, the median value of each day of the week during a 5‑week period (Jan 3 – Feb 6, 2020).
+Our initial objective was to find out if running a linear regression of the Google Mobility data with the COVID-19 data had any significance in predicting the rate of deaths due to COVID-19. The Google mobility data recorded travel trends to categorized locations during the COVID-19 pandemic. This data is compared against a baseline reading; that is, the median value of each day of the week during a 5‑week period (Jan 3 – Feb 6, 2020).
 
-**Variables used:**  
+**Variables used (for more details see Appendix 5):**  
 **Original COVID-19 data:** date, confirmed, tests, population, latitude, longitude, school_closing, workplace_closing, cancel_events, transport_closing, stay_home_restrictions, internal_movement_restrictions, international_movement_restrictions, information_campaigns, testing_policy, contact_tracing, stringency_index  
 **World Bank data set:** GDP per capita, GDP per capita growth, Poverty rate, Pollution in mcg  
 **Google Mobility data set:** retail_and_recreation_percent_change_from_baseline, grocery_and_pharmacy_percent_change_from_baseline, parks_percent_change_from_baseline, transit_stations_percent_change_from_baseline, workplaces_percent_change_from_baseline, residential_percent_change_from_baseline
@@ -129,8 +129,9 @@ How does the economic profile of the country affect the mortality rate from COVI
 
 ### Important Details
 
+In our last analysis, we wanted to see if we could find a linear regression of the Google Mobility variables when deaths as a response. So, we started off by doing an initial summary, and our initial plots also showed that linearity assumptions were not satisfied. It also showed that Workplace change was not significant, which was interesting since we assumed that most workplaces were closed. 
 
-
+Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors. We compared all models by looking at adjusted R-squared and CP values. (Table 2, Appendix 2B) The model we chose had all 6 predictor variables. Next, we decided to check if there were any necessary transformations for the predictors. We found that 5 out of 6 variables needed to be transformed.(Table 3, Appendix 2B).The assumptions were still not met (Plot 2, Appendix 2B). Then we needed to see if the Response variable needed to be transformed, and found that it required a square root transformation (Plot 3, Appendix 2B).
 
 ### Exploratory Analysis I:
 
@@ -176,17 +177,9 @@ For our next model, we decided to remove all base COVID-19 numerical data from t
 
 We looked at adding a categorical variable to our model however the linear assumptions kept getting worse so we chose to leave the categorical variables out of our model and changed our questions to match this.
 
-#### b) Full Model (Google Mobility Numerical Variables only)
-
-In our last analysis, we wanted to see if we could find a linear regression of the Google Mobility variables when deaths as a response. So, we started off by doing an initial summary, and our initial plots also showed that Linearity assumptions were not satisfied. It also showed that Workplace change was not significant, which was interesting since we assumed that most workplaces were closed. 
-
-Because the current model did not meet our assumptions of linearity, we decided to run a variable selection to help us narrow down significant predictors. We compared all models by looking at adjusted R-squared and CP values. (Table 2, Appendix 2B) The model we chose had all 6 predictor variables. Next, we decided to check if there were any necessary transformations for the predictors. We found that 5 out of 6 variables needed to be transformed.(Table 3, Appendix 2B).The assumptions were still not met (Plot 2, Appendix 2B). Then we needed to see if the Response variable needed to be transformed, and found that it required a square root transformation (Plot 3, Appendix 2B), which was also what the previous model with the Google Mobility and Covid-base data found (Plot 6, Appendix 2A).
-
-
-
 ### Diagnostic Checks II:
 
-And this plot shows us that we have a linear model and all of the assumptions are met as well as our data can.
+The top two plots are the model using categorical variables and the bottom two plots are the numerical data only. There is a stark difference between the two. The second model is definitely satisfies the linearity assumptions.
 
 ```{r, fig.dim = c(6,4), echo=FALSE}
 regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + 
@@ -204,15 +197,23 @@ plot(google.only4, which = c(1,2))
 
 ```
 
-
-
-
 ### Interpretation II:
 
+$\sqrt{deaths} = 0.2876+347.5425retail\;and\;recreation\;percent\;change\;from\;baseline^2-536.4473\sqrt{grocery\;and\;pharmacy\;percent\;change\;from\;baseline}-15.9176log(parks\;percent\;change\;from\;baseline)-44.9572log(transit\;stations\;percent\;change\;from\;baseline)-55.1082 workplaces\;percent\;change\;from\;baseline+392.1944residential\;percent\;change\;from\;baseline)^-2$
 
-$\sqrt{deaths} = \beta_0+\beta_1retail\;and\;recreation\;percent\;change\;from\;baseline^2+\beta_2\sqrt{grocery\;and\;pharmacy\;percent\;change\;from\;baseline}+\beta_3log(parks\;percent\;change\;from\;baseline)+\beta_4log(transit\;stations\;percent\;change\;from\;baseline)+\beta_5workplaces\;percent\;change\;from\;baseline+\beta_6residential\;percent\;change\;from\;baseline)^-2$
+We come to the conclusion that this model explains 43.11% of the variability seen in the number of California Covid deaths. 
 
+A one unit increase in people going to areas of $retail\;and\;recreation^2$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by 347.54. 
 
+A one unit increase in people going to areas of $\sqrt{grocery\;and\;pharmacy}$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -536.45. 
+
+A one unit increase in people going to areas of $log(parks)$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -15.92. 
+
+A one unit increase in people going to areas of $log(transit\;stations)$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -44.96. 
+
+A one unit increase in people going to areas of workplaces with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -55.11. 
+
+A one unit increase in people going to areas of $residential^-2$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by 392.19. 
 
 ### Exploratory Analysis III:
 
@@ -223,9 +224,12 @@ For the World Bank Data set, we only had one annual data point for each country.
 
 ## Conclusions (200 words) - Thomas
 
-The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
+For the first question, a linear regression model using only variables from the base data set did not meet the required assumptions of normality and thus we were unable to answer this question..
 
-The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like. The young man wanted a role model. He looked long and hard in his youth, but that role model never materialized. His only choice was to embrace all the people in his life he didn't want to be like.
+For the second question, a linear regression model using variables from base data and Google mobility data did not meet the required assumptions of normality when we included any categorical variables as predictors. So we created a linear regression model using only numerical variables from the Google mobility data, this came the closest to meeting assumptions of normality. From this we found that the Retail and Recreation variable as well as the Residential Variable are positively correlated with deaths and the Grocery and Pharmacy, Parks, Workplaces and Transit Station are negatively correlated with deaths.
+
+For the third question, we were unable to find a usable data set and thus were unable to answer this question.
+
 
 \pagebreak
 ## Appendicies
@@ -478,6 +482,7 @@ mod.full6 <- lm((deaths^{1/3}) ~ fstay_home_restrictions + I(tests^{1/3}) +
 plot(mod.full6)
 ```
 
+\pagebreak
 ### Appendix 2a: R Code for Google Mobility + Categorical Variables
 
 ##### Code 1: 
@@ -586,6 +591,7 @@ par(mfrow=c(2,2))
 plot(regsubset.trans1, which = c(1,2))
 ```
 
+\pagebreak
 ### Appendix 2b: R Code for Google Mobility Only
 
 ##### Table 1:   
@@ -619,10 +625,10 @@ googleonly.subset
 ##### Table 4:
 
 ```{r, echo=FALSE}
-google.only3 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
+google.only3 <- lm(sqrt(deaths) ~ I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
     sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^(1/3)) + 
     log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
-    I(residential_percent_change_from_baseline^(-2)), data = cacovid_mobility))
+    I(residential_percent_change_from_baseline^(-2)), data = cacovid_mobility)
 summary(google.only3)
 ```
 
@@ -630,10 +636,10 @@ summary(google.only3)
 
 ```{r, echo=FALSE}
 cacovid_mobilityGO <- cacovid_mobility[-8847, -9918, ]
-google.only4 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
-    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^(1/3)) + 
+google.only4 <- lm(sqrt(deaths) ~ I(retail_and_recreation_percent_change_from_baseline^{3/2}) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^{1/3}) + 
     log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
-    I(residential_percent_change_from_baseline^(-2)), data = cacovid_mobilityGO))
+    I(residential_percent_change_from_baseline^(-2)), data = cacovid_mobilityGO)
 summary(google.only4)
 ```
 
@@ -695,6 +701,7 @@ plot(google.only3, which = c(1,2))
 plot(google.only4, which = c(1,2))
 ```
 
+\pagebreak
 ### Appendix 3: R Code for World Bank
 
 Base Data with World Bank imported, GDP, GDP growth, Hospital beds/1,000 ppl, Poverty= Poverty head count ratio at 1.90 a day(% of pop), CO2em: CO2 emissions (metric tons/capita), Air pollution: % Pop exposed to levels exceeding WHO guidelines, 
@@ -734,7 +741,7 @@ summary(economic)
 summary(airqual)
 ```
 
-
+\pagebreak
 ### Appendix 4: Exploratory analysis not used in final paper
 
 #### Github Link:
