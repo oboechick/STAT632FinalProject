@@ -4,6 +4,8 @@ output: github_document
 ---
 
 #Base Data with World Bank imported, GDP, GDP growth, Hospital beds/1,000 ppl, Poverty= Poverty head count ratio at 1.90 a day(% of pop), CO2em: CO2 emissions (metric tons/capita), Air pollution: % Pop exposed to levels exceeding WHO guidelines, 
+
+
 ```{r}
 library(pacman)
 p_load(COVID19, car, tidyverse, ggplot2, dplyr, leaps, readr)
