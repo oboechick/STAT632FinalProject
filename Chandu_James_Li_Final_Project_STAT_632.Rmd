@@ -98,15 +98,20 @@ cacovid_mobilityGO <- cacovid_mobility[-8847, -9918, ]
 ```
 
 ```{r, fig.dim = c(6,4), echo=FALSE}
-pairs(deaths ~ confirmed + tests + fschool_closing +
-                 fworkplace_closing + fgatherings_restrictions + fstay_home_restrictions + 
-                 finternal_movement_restrictions  +finformation_campaigns + ftesting_policy + 
-                 fcontact_tracing + stringency_index + retail_and_recreation_percent_change_from_baseline + 
+pairs(deaths ~ confirmed + tests + stringency_index + retail_and_recreation_percent_change_from_baseline + 
         grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + 
         transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + 
         residential_percent_change_from_baseline, data = cacovid_mobility)
 ```
-
+```{r, fig.dim = c(6,4), echo=FALSE}
+par(mfrow=c(2,3))
+boxplot(deaths ~ fschool_closing, data = fbase_data, ylab = "Deaths", xlab = "School Closing")
+boxplot(deaths ~ fworkplace_closing, data = fbase_data, ylab = "Deaths", xlab = "Workplace Closing")
+boxplot(deaths ~  fgatherings_restrictions, data = fbase_data, ylab = "Deaths", xlab = "Restrictions on Gathering")
+boxplot(deaths ~  + fstay_home_restrictions, data = fbase_data, ylab = "Deaths", xlab = "Stay at Home Restrictions")
+boxplot(deaths ~  + ftesting_policy, data = fbase_data, ylab = "Deaths", xlab = "Testing Policies")
+boxplot(deaths ~  + fcontact_tracing, data = fbase_data, ylab = "Deaths", xlab = "Contact Tracing")
+```
 
 ## Questions of Interest
 
@@ -129,7 +134,7 @@ How does the economic profile of the country affect the mortality rate from COVI
 
 ### Exploratory Analysis I:
 
-We started by creating a data frame by filtering the data first by United States of America, secondly by California, and finally by date. We ended with 365 rows of data for California. There is not any data for *vaccines*, *recovered*, *hosp*, *vent*, and *icu* so we removed these variables. We decided to use the following variables to create a new data frame date, *tests*, *confirmed*, *recovered*, *deaths*, *hosp*, *vent*, *icu*, *latitude*, *longitude*, *population*, *vaccines*, *school_closing*, *workplace_closing*, *cancel_events*, *gatherings_restrictions*, *transport_closing*, *stay_home_restrictions*, *internal_movement_restrictions*, *international_movement_restrictions*, *information_campaigns*, *testing_policy*, *contact_tracing*, and *stringency_index*. Since we don't have data for *vaccines*, *recovered*, *hosp*, *vent*, and *icu* we removed these variables. All variables now have data in every row. We then turned the policy measures (categorical variables) into factors before we fitted a regression model. However factors need to have 2 or more levels in order to work so we also removed *cancel_events*, *international_movement*, and *transport_closing*. We also removed *internal_movement_restrictions*, *information_campaigns*, *population*, *longitude*, and *latitude* as they have the same data for every row causing a singularity in the data. This left us with a base data set of *confirmed*,  *tests*, *fschool_closing*, *fworkplace_closing*, *fgatherings_restrictions*, *fstay_home_restrictions*, *ftesting_policy*, *fcontact_tracing*, and *stringency_index* as the predictors to start looking for a linear regression model with.
+We started by creating a data frame by filtering the data by California, and then by date. We ended with 365 rows of data for California. There is not any data for *vaccines*, *recovered*, *hosp*, *vent*, and *icu* so we removed these variables. We decided to use the following variables to create a new data frame date using the original COVID-19 data. We then turned the policy measures (categorical variables) into factors before we fitted a regression model. However factors need to have 2 or more levels in order to work so we also removed *cancel_events*, *international_movement*, and *transport_closing*. We also removed all variables that caused a singularity in the data. This left us with a base data set of *confirmed*,  *tests*, *fschool_closing*, *fworkplace_closing*, *fgatherings_restrictions*, *fstay_home_restrictions*, *ftesting_policy*, *fcontact_tracing*, and *stringency_index* as the predictors to start looking for a linear regression model with.
 
 We started by running a hypothesis test to see if we would prefer the null model against the full model. From Table 1 in Appendix 1, we can see that the p-value is < 2.2e-16 so we reject the null model as at least one predictor in the full model is significant.
 
