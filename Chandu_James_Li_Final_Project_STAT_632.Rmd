@@ -209,7 +209,10 @@ plot(google.only4, which = c(1,2))
 
 ### Interpretation II:
 
-$Y_{ijk} = \beta_1 var1 + \beta_2 var2$
+
+$\sqrt{deaths} = \beta_0+\beta_1retail\;and\;recreation\;percent\;change\;from\;baseline^2+\beta_2\sqrt{grocery\;and\;pharmacy\;percent\;change\;from\;baseline}+\beta_3log(parks\;percent\;change\;from\;baseline)+\beta_4log(transit\;stations\;percent\;change\;from\;baseline)+\beta_5workplaces\;percent\;change\;from\;baseline+\beta_6residential\;percent\;change\;from\;baseline)^-2$
+
+
 
 ### Exploratory Analysis III:
 
