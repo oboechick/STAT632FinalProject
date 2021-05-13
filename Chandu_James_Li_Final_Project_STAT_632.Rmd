@@ -136,13 +136,11 @@ Prior to transformation, when we did model selection using reg.susbset, we found
 ```{r, echo=FALSE}
 googleonly.subset <- summary(regsubsets(deaths ~ retail_and_recreation_percent_change_from_baseline + grocery_and_pharmacy_percent_change_from_baseline + parks_percent_change_from_baseline + transit_stations_percent_change_from_baseline + workplaces_percent_change_from_baseline + residential_percent_change_from_baseline, data = cacovid_mobility))
 
-googleonly.subset$cp
 which.min(googleonly.subset$cp)
 
-googleonly.subset$adjr2
 which.max(googleonly.subset$adjr2)
 ```
-### Exploratory Analysis I:
+### Exploratory Analysis:
 
 We started by creating a data frame by filtering the data by California, and then by date. We ended with 365 rows of data for California. There is not any data for *vaccines*, *recovered*, *hosp*, *vent*, and *icu* so we removed these variables. We decided to use the following variables to create a new data frame date using the original COVID-19 data. We then turned the policy measures (categorical variables) into factors before we fitted a regression model. However factors need to have 2 or more levels in order to work so we also removed *cancel_events*, *international_movement*, and *transport_closing*. We also removed all variables that caused a singularity in the data. This left us with a base data set of *confirmed*,  *tests*, *fschool_closing*, *fworkplace_closing*, *fgatherings_restrictions*, *fstay_home_restrictions*, *ftesting_policy*, *fcontact_tracing*, and *stringency_index* as the predictors to start looking for a linear regression model with.
 
@@ -150,25 +148,15 @@ We started by running a hypothesis test to see if we would prefer the null model
 
 Next we looked at the scatter plots for all of the variables. This was less useful since there were so many plots that it was difficult to see in detail (Plot 1, Appendix 1) so we looked at the scatter plots of the numerical data (Plot 2, Appendix 1) to see if there was anything that we could derive from the data. We assume that *confirmed* and *tests* would be a positive influence on the number of *deaths* because we see that there are positive linear relationships. The *stringency index* has a clear patterning to it that does not show any linear trends making it difficult to make any assumptions about it. We also should note that none of the variables are spread out. The data creates a line with the data points we will definitely need to transform this data to see if we can find a linear relationship. We then did an analysis of the categorical data using box plots (Plot 3, Appendix 1). From these we concluded that none of these variables have a constant variance and thus we will probably need to transform some if not all of the variables. We also looked at the added variable plots (Plot 4, Appendix 1) and summary to see if we should remove any variables. From the added variable plots we assumed that we will probably remove *testing policy*, *confirmed*, and *stringency index*. While *gathering restrictions 2* and *gathering restrictions 3* look like they should be removed, *gathering restrictions 4* looks to have some influence and therefore we chose to keep the *gathering restrictions*. However, the summary table shows us that *confirmed* and *gathering restrictions* will probably be removed. Which goes against what we previously thought when looking at only the scatter plots and the added variable plots. We will probably keep *testing policy* since only one of the dummy variables is not significant. 
 
-Next we did a variable selection using AIC and BIC stepwise selection (see Code 1-2, Appendix 1). We can see that the only variable that is not significant is a dummy variable for *testing policy* and we cannot remove it so we leave it in and we are left with a model of:
+Next we did a variable selection using AIC and BIC stepwise selection (see Code 1-2, Appendix 1). We can see that the only variable that is not significant is a dummy variable for *testing policy* and we cannot remove it so we leave it in.
 
-$deaths = \beta_0 + \beta_1 fstay.home.restrictions + \beta_2 tests  + \beta_3 fworkplace.closing  + \beta_4 fschool.closing  + \beta_5 fcontact.tracing  + \beta_6ftesting.policy  + \beta_7 stringency.index$
-
-We looked at the residuals vs fitted and Q-Q plot (Plot 5, Appendix 1) to see if the linear assumptions were violated and to check to see if there were any outliers and/or leverage points. From the plots we can see that there is definite patterning in the residuals vs fitted plot and the Q-Q plot is heavy tailed showing violations of normality. We then run a powerTransform (Code 3, Appendix 1) on the numerical predictors and see that *tests* needs a cube root transformation and *stringency index* needs a logarithmic transformation. After we transform these predictors we checked to see if we needed to transform *deaths* and can see that the boxCox (Plot 6, Appendix 1) suggests a cube root transformation. This left us with a model of $\sqrt[3]{deaths} = \beta_0 + \beta_1 fstay.home.restrictions + \beta_2 \sqrt[3]{tests}  + \beta_3 fworkplace.closing  + \beta_4 fschool.closing  + \beta_5 fcontact.tracing  + \beta_6ftesting.policy  + \beta_7 log(stringency.index)$
+After doing some analysis (Plot 5-6, Code 3, Appendix 1) we determined that we needed to do a transformation and this is the final model that we ended with. $\sqrt[3]{deaths} = \beta_0 + \beta_1 fstay.home.restrictions + \beta_2 \sqrt[3]{tests}  + \beta_3 fworkplace.closing  + \beta_4 fschool.closing  + \beta_5 fcontact.tracing  + \beta_6ftesting.policy  + \beta_7 log(stringency.index)$
 
 After transformation we looked at the residual vs fitted and Q-Q plot  again to check for linearity and check to see if there are still outliers. When we looked at the residuals vs fitted plot is still very patterned and the Q-Q plot is still heavy-tailed but less so (Plot 7, Appendix 1). We then used Cook’s Distance plots (Plots 8-10, Appendix 1) and removed outliers (Code 5, Appendix 1) 
-
-
-### Diagnostic Checks and Interpretation I:
 
 After transformation and outlier/leverage points being removed we checked the summary (Table 4, Appendix 1) again and saw that *fworkplace_gathering_restrictions* was no longer significant and so we removed it and checked the linear assumptions again (Plot 11, Appendix 1). There was no difference seen. When we did a hypothesis test to see if we preferred the $H_0:$ mod.full6 or $H_1:$ mod.full5 (Code 6, Appendix 1), the p-value is 0.9087 showing us that we prefer the smaller model. 
 
 Our assumption that *confirmed* would have a strong effect on deaths was not correct. None of the data manipulation performed gave us a linear model as was seen by the clear patterning in the residuals vs. fitted plot. Because of this, we decided not to interpret this model.
-
-
-### Exploratory Analysis II:
-
-#### a) Full Model (Base Covid + Google Mobility)
 
 Manipulating the Google mobility data into a workable data set resulted in the following predictors: *retail_and_recreation_percent_change_from_baseline*, *grocery_and_pharmacy_percent_change_from_baseline*, *parks_percent_change_from_baseline*,  *transit_stations_percent_change_from_baseline*, *workplaces_percent_change_from_baseline*, and *residential_percent_change_from_baseline*. We then combined them with the full model from the base data set to create our new full model.
 
@@ -186,9 +174,9 @@ For our next model, we decided to remove all base COVID-19 numerical data from t
 
 We looked at adding a categorical variable to our model however the linear assumptions kept getting worse so we chose to leave the categorical variables out of our model and changed our questions to match this.
 
-### Diagnostic Checks II:
+For the World Bank Data set, we only had one annual data point for each country. This meant that we had the same data point for every day which caused a singularity when we tried to analyze the data and combine it with the original COVID data set. We also did not have state data which is what we wanted to analyze. At the end, we only had the country by country data and could only look at one day and found that most of the variables were consistently lacking significant amounts of data points, which led to serious issues with the reliability of the data. Eventually we decided to only focus on the base data set and combine it with the Google Mobility tracking data. 
 
-The top two plots are the model using categorical variables and the bottom two plots are the numerical data only. There is a stark difference between the two. The second model is definitely satisfies the linearity assumptions.
+### Diagnostic Checks:
 
 ```{r, fig.dim = c(6,4), echo=FALSE}
 regsubset.trans1 <- lm(sqrt(deaths) ~ date + sqrt(tests) + fschool_closing + 
@@ -206,32 +194,15 @@ plot(google.only4, which = c(1,2))
 
 ```
 
-### Interpretation II:
+The top two plots are the model using categorical variables and the bottom two plots are the numerical data only. There is a stark difference between the two. The second model is definitely satisfies the linearity assumptions.
 
-$\sqrt{deaths} = 0.2876+347.5425retail\;and\;recreation\;percent\;change\;from\;baseline^2-536.4473\sqrt{grocery\;and\;pharmacy\;percent\;change\;from\;baseline}-15.9176log(parks\;percent\;change\;from\;baseline)-44.9572log(transit\;stations\;percent\;change\;from\;baseline)-55.1082 workplaces\;percent\;change\;from\;baseline+392.1944residential\;percent\;change\;from\;baseline)^-2$
+### Interpretation:
 
-We come to the conclusion that this model explains 43.11% of the variability seen in the number of California Covid deaths. 
+$\sqrt{deaths} = 0.2876+347.5425retail\;and\;recreation\;percent\;change\;from\;baseline^2-536.4473\sqrt{grocery\;and\;pharmacy\;percent\;change\;from\;baseline}-15.9176log(parks\;percent\;change\;from\;baseline)-44.9572log(transit\;stations\;percent\;change\;from\;baseline)-55.1082 workplaces\;percent\;change\;from\;baseline+392.1944residential\;percent\;change\;from\;baseline)^{-2}$
 
-A one unit increase in people going to areas of $retail\;and\;recreation^2$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by 347.54. 
+We come to the conclusion that this model explains 43.11% of the variability seen in the number of California Covid deaths, a one unit increase in people going to areas of $retail\;and\;recreation^2$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by 347.54, a one unit increase in people going to areas of $\sqrt{grocery\;and\;pharmacy}$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -536.45, a one unit increase in people going to areas of $log(parks)$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -15.92, a one unit increase in people going to areas of $log(transit\;stations)$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -44.96, a one unit increase in people going to areas of workplaces with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -55.11, and a one unit increase in people going to areas of $residential^{-2}$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by 392.19. 
 
-A one unit increase in people going to areas of $\sqrt{grocery\;and\;pharmacy}$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -536.45. 
-
-A one unit increase in people going to areas of $log(parks)$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -15.92. 
-
-A one unit increase in people going to areas of $log(transit\;stations)$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -44.96. 
-
-A one unit increase in people going to areas of workplaces with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by -55.11. 
-
-A one unit increase in people going to areas of $residential^-2$ with the other predictors held fixed is associated with an increase in $\sqrt{deaths}$ by 392.19. 
-
-### Exploratory Analysis III:
-
-For the World Bank Data set, we only had one annual data point for each country. This meant that we had the same data point for every day which caused a singularity when we tried to analyze the data and combine it with the original COVID data set. We also did not have state data which is what we wanted to analyze. At the end, we only had the country by country data and could only look at one day and found that most of the variables were consistently lacking significant amounts of data points, which led to serious issues with the reliability of the data. Eventually we decided to only focus on the base data set and combine it with the Google Mobility tracking data. 
-
-
-
-
-## Conclusions (200 words) - Thomas
+## Conclusions
 
 For the first question, a linear regression model using only variables from the base data set did not meet the required assumptions of normality and thus we were unable to answer this question..
 
