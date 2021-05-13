@@ -619,20 +619,21 @@ googleonly.subset
 ##### Table 4:
 
 ```{r, echo=FALSE}
-google.only3 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
-    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+google.only3 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^(1/3)) + 
     log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
-    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+    I(residential_percent_change_from_baseline^(-2)), data = cacovid_mobility))
 summary(google.only3)
 ```
 
 ##### Table 5: 
 
 ```{r, echo=FALSE}
-google.only4 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
-    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+cacovid_mobilityGO <- cacovid_mobility[-8847, -9918, ]
+google.only4 <- lm(sqrt(deaths) ~ (I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^(1/3)) + 
     log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
-    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobilityGO)
+    I(residential_percent_change_from_baseline^(-2)), data = cacovid_mobilityGO))
 summary(google.only4)
 ```
 
@@ -646,10 +647,10 @@ plot(google.only, which = c(1,2))
 ##### Plot 2:
 
 ```{r, echo=FALSE}
-google.only2 <- lm(deaths ~ (I(retail_and_recreation_percent_change_from_baseline)^2) + 
-    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + log(parks_percent_change_from_baseline) + 
+google.only2 <- lm(deaths ~ I(retail_and_recreation_percent_change_from_baseline^(3/2)) + 
+    sqrt(grocery_and_pharmacy_percent_change_from_baseline) + I(parks_percent_change_from_baseline^(1/3)) + 
     log(transit_stations_percent_change_from_baseline) + workplaces_percent_change_from_baseline + 
-    (I(1/residential_percent_change_from_baseline)^2), data = cacovid_mobility)
+    I(residential_percent_change_from_baseline^(-2)), data = cacovid_mobility)
 
 summary(google.only2)
 
@@ -718,13 +719,6 @@ fhosp_beds<- as.integer(wbcovdata$hosp_beds)
 fpoverty<- as.integer(wbcovdata$poverty)
 fco2em<- as.integer(wbcovdata$co2em)
 fpollution<- as.integer(wbcovdata$pollution)
-
-#wbcovdata$gdp %>% replace_na(0)
-#wbcovdata$gdp_grow %>% replace_na(0)
-#wbcovdata$hosp_beds %>% replace_na(0)
-#wbcovdata$poverty %>% replace_na(0)
-#wbcovdata$co2em %>% replace_na(0)
-#wbcovdata$pollution %>% replace_na(0)
 
                        
 cleandata <- na.omit(wbcovdata)
